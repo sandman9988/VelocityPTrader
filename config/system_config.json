@@ -1,0 +1,27 @@
+{
+  "mt5_login": 10916362,
+  "mt5_server": "VantageInternational-Demo",
+  "mt5_password": "",
+  "symbols": [
+    "EURUSD+",
+    "GBPUSD+",
+    "USDJPY+",
+    "USDCHF+",
+    "BTCUSD+",
+    "ETHUSD+",
+    "SPX500+",
+    "US30+",
+    "XAUUSD+",
+    "XAGUSD+"
+  ],
+  "timeframes": ["M1", "M5", "M15", "H1"],
+  "max_positions": 10,
+  "risk_per_trade": 0.02,
+  "update_interval": 1.0,
+  "shadow_trading_enabled": true,
+  "transfer_learning_interval": 3600,
+  "model_save_interval": 1800,
+  "use_multiprocessing": true,
+  "process_pool_size": 8,
+  "thread_pool_size": 32
+}
