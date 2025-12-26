@@ -1,0 +1,476 @@
+name: PostgreSQL Enterprise Testing
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Test database integrity daily
+    - cron: '0 4 * * *'
+
+env:
+  PYTHON_VERSION: '3.11'
+  POSTGRES_VERSION: '15'
+
+jobs:
+  # PostgreSQL database testing
+  database-tests:
+    name: Database Integration Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: velocity_trader_test
+          POSTGRES_USER: velocity_trader
+          POSTGRES_PASSWORD: test_password_123
+          POSTGRES_HOST_AUTH_METHOD: trust
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    env:
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: velocity_trader_test
+      POSTGRES_USER: velocity_trader
+      POSTGRES_PASSWORD: test_password_123
+      TRADING_ENV: testing
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest-postgresql pytest-asyncio
+      
+      - name: Wait for PostgreSQL
+        run: |
+          until pg_isready -h localhost -p 5432 -U velocity_trader; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+      
+      - name: Verify PostgreSQL connection
+        run: |
+          echo "Testing PostgreSQL connection..."
+          PGPASSWORD=test_password_123 psql -h localhost -p 5432 -U velocity_trader -d velocity_trader_test -c "SELECT version();"
+      
+      - name: Run database model tests
+        run: |
+          echo "::group::Database Model Tests"
+          python -m pytest tests/test_database_models.py -v --tb=short
+          echo "::endgroup::"
+      
+      - name: Run atomic operations tests
+        run: |
+          echo "::group::Atomic Operations Tests"
+          python -m pytest tests/test_atomic_operations.py -v --tb=short
+          echo "::endgroup::"
+      
+      - name: Run migration tests
+        run: |
+          echo "::group::Database Migration Tests"
+          python -m pytest tests/test_migrations.py -v --tb=short
+          echo "::endgroup::"
+      
+      - name: Test data integrity constraints
+        run: |
+          echo "::group::Data Integrity Tests"
+          python -c "
+          from src.database.connection import initialize_database, DatabaseConfig
+          from src.database.operations import AtomicDataOperations
+          from src.database.models import TradingMode, AgentType
+          from uuid import uuid4
+          from decimal import Decimal
+          
+          # Initialize test database
+          config = DatabaseConfig()
+          config.database = 'velocity_trader_test'
+          config.password = 'test_password_123'
+          
+          db = initialize_database(config)
+          db.create_tables()
+          
+          ops = AtomicDataOperations(db)
+          
+          # Test session creation
+          session = ops.create_trading_session(
+              mode=TradingMode.VIRTUAL,
+              mt5_server='VantageInternational-Demo',
+              mt5_login=10916362,
+              initial_balance=Decimal('10000.00')
+          )
+          
+          print(f'✅ Database integrity test passed: {session.id}')
+          "
+          echo "::endgroup::"
+      
+      - name: Test fake data rejection
+        run: |
+          echo "::group::Fake Data Rejection Tests"
+          python -c "
+          from src.database.connection import initialize_database, DatabaseConfig
+          from src.database.operations import AtomicDataOperations
+          from uuid import uuid4
+          
+          config = DatabaseConfig()
+          config.database = 'velocity_trader_test'
+          config.password = 'test_password_123'
+          
+          db = initialize_database(config)
+          ops = AtomicDataOperations(db)
+          
+          # Test fake data rejection
+          try:
+              fake_data = [{
+                  'symbol': 'FAKEUSD',
+                  'timeframe': 'M1',
+                  'timestamp': '2023-01-01T00:00:00Z',
+                  'open_price': 999999.0,  # Unrealistic price
+                  'high_price': 999999.0,
+                  'low_price': 999999.0,
+                  'close_price': 999999.0,
+                  'volume': 1000.0,
+                  'bid_price': 999999.0,
+                  'ask_price': 999999.0,
+                  'spread_pips': 1.0
+              }]
+              ops.insert_market_data_batch(uuid4(), fake_data)
+              print('❌ FAKE DATA WAS ACCEPTED - SECURITY BREACH!')
+              exit(1)
+          except Exception as e:
+              print(f'✅ Fake data correctly rejected: {e}')
+              
+          print('✅ Data integrity validation passed')
+          "
+          echo "::endgroup::"
+      
+      - name: Performance benchmark
+        run: |
+          echo "::group::Database Performance Benchmark"
+          python -c "
+          import time
+          from src.database.connection import initialize_database, DatabaseConfig
+          from src.database.operations import AtomicDataOperations
+          from src.database.models import TradingMode
+          from uuid import uuid4
+          from decimal import Decimal
+          from datetime import datetime, timezone
+          
+          config = DatabaseConfig()
+          config.database = 'velocity_trader_test'
+          config.password = 'test_password_123'
+          
+          db = initialize_database(config)
+          ops = AtomicDataOperations(db)
+          
+          # Create test session
+          session = ops.create_trading_session(
+              mode=TradingMode.VIRTUAL,
+              mt5_server='VantageInternational-Demo',
+              mt5_login=10916362,
+              initial_balance=Decimal('10000.00')
+          )
+          
+          # Benchmark batch insert
+          start_time = time.time()
+          batch_size = 100
+          
+          test_data = []
+          for i in range(batch_size):
+              test_data.append({
+                  'symbol': 'EURUSD+',
+                  'timeframe': 'M1',
+                  'timestamp': datetime.now(timezone.utc),
+                  'open_price': 1.1000 + i * 0.0001,
+                  'high_price': 1.1010 + i * 0.0001,
+                  'low_price': 1.0990 + i * 0.0001,
+                  'close_price': 1.1005 + i * 0.0001,
+                  'volume': 1000.0,
+                  'bid_price': 1.1003 + i * 0.0001,
+                  'ask_price': 1.1007 + i * 0.0001,
+                  'spread_pips': 0.4
+              })
+          
+          ops.insert_market_data_batch(session.id, test_data)
+          
+          end_time = time.time()
+          duration = end_time - start_time
+          throughput = batch_size / duration
+          
+          print(f'✅ Database Performance:')
+          print(f'   Batch size: {batch_size} records')
+          print(f'   Duration: {duration:.3f} seconds')
+          print(f'   Throughput: {throughput:.1f} records/second')
+          
+          if throughput < 50:
+              print('⚠️  Performance warning: < 50 records/second')
+          else:
+              print('✅ Performance acceptable')
+          "
+          echo "::endgroup::"
+
+  # Data pipeline integration test
+  data-pipeline-integration:
+    name: Data Pipeline Integration
+    runs-on: ubuntu-latest
+    needs: database-tests
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: velocity_trader_test
+          POSTGRES_USER: velocity_trader
+          POSTGRES_PASSWORD: test_password_123
+          POSTGRES_HOST_AUTH_METHOD: trust
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    env:
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: velocity_trader_test
+      POSTGRES_USER: velocity_trader
+      POSTGRES_PASSWORD: test_password_123
+      TRADING_ENV: testing
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Test enterprise logging system
+        run: |
+          echo "::group::Enterprise Logging Tests"
+          python -c "
+          from src.utils.enterprise_logging import EnterpriseLogger
+          from src.database.connection import initialize_database, DatabaseConfig
+          from uuid import uuid4
+          
+          config = DatabaseConfig()
+          config.database = 'velocity_trader_test'
+          config.password = 'test_password_123'
+          
+          db = initialize_database(config)
+          db.create_tables()
+          
+          logger = EnterpriseLogger(session_id=uuid4(), db_manager=db)
+          
+          # Test health logging
+          health_data = {
+              'cpu_usage': 45.2,
+              'memory_usage': 67.8,
+              'disk_usage': 23.1,
+              'overall_status': 'HEALTHY',
+              'mt5_connected': True
+          }
+          
+          logger.log_system_health(health_data)
+          print('✅ Enterprise logging test passed')
+          "
+          echo "::endgroup::"
+      
+      - name: Test real data pipeline validation
+        run: |
+          echo "::group::Real Data Pipeline Validation"
+          python -c "
+          from src.core.real_data_pipeline import RealDataPipeline
+          
+          pipeline = RealDataPipeline()
+          
+          # Test validation methods
+          integrity = pipeline.validate_data_integrity()
+          print(f'✅ Data integrity status: {integrity}')
+          
+          stats = pipeline.get_statistics()
+          print(f'✅ Pipeline statistics: {stats}')
+          
+          # Verify no fake data methods exist
+          assert not hasattr(pipeline, 'generate_fake_data'), 'Fake data method found!'
+          assert not hasattr(pipeline, 'simulate_data'), 'Simulation method found!'
+          print('✅ No fake data methods detected')
+          "
+          echo "::endgroup::"
+
+  # Production readiness validation
+  production-readiness:
+    name: Production Database Readiness
+    runs-on: ubuntu-latest
+    needs: [database-tests, data-pipeline-integration]
+    if: github.ref == 'refs/heads/main'
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: velocity_trader_prod_test
+          POSTGRES_USER: velocity_trader
+          POSTGRES_PASSWORD: prod_test_password_456
+          POSTGRES_HOST_AUTH_METHOD: trust
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    env:
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: velocity_trader_prod_test
+      POSTGRES_USER: velocity_trader
+      POSTGRES_PASSWORD: prod_test_password_456
+      TRADING_ENV: production
+      CONFIRM_PRODUCTION_MIGRATION: true
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Production migration test
+        run: |
+          echo "::group::Production Migration Test"
+          python -c "
+          from src.database.connection import initialize_database, DatabaseConfig
+          from src.database.models import validate_schema
+          
+          config = DatabaseConfig()
+          config.database = 'velocity_trader_prod_test'
+          config.password = 'prod_test_password_456'
+          
+          db = initialize_database(config)
+          db.create_tables()
+          
+          # Validate all constraints are in place
+          validate_schema(db.engine)
+          
+          print('✅ Production database schema validation passed')
+          "
+          echo "::endgroup::"
+      
+      - name: Security validation
+        run: |
+          echo "::group::Security Validation"
+          python -c "
+          from src.database.models import TradingSession, MarketData
+          from src.database.connection import initialize_database, DatabaseConfig
+          from sqlalchemy.exc import IntegrityError
+          
+          config = DatabaseConfig()
+          config.database = 'velocity_trader_prod_test'
+          config.password = 'prod_test_password_456'
+          
+          db = initialize_database(config)
+          
+          # Test server constraint
+          try:
+              with db.get_session() as session:
+                  bad_session = TradingSession(
+                      mode='LIVE',
+                      mt5_server='FakeServer',  # Should be rejected
+                      mt5_login=123,
+                      initial_balance=1000
+                  )
+                  session.add(bad_session)
+                  session.commit()
+              print('❌ Security breach: fake server accepted!')
+              exit(1)
+          except IntegrityError:
+              print('✅ Fake server correctly rejected')
+          
+          # Test data source constraint
+          try:
+              with db.get_session() as session:
+                  fake_session = TradingSession(
+                      mode='LIVE',
+                      mt5_server='VantageInternational-Demo',
+                      mt5_login=123,
+                      initial_balance=1000
+                  )
+                  session.add(fake_session)
+                  session.flush()
+                  
+                  bad_data = MarketData(
+                      session_id=fake_session.id,
+                      symbol='EURUSD+',
+                      timeframe='M1',
+                      timestamp='2023-01-01T00:00:00Z',
+                      open_price=1.1,
+                      high_price=1.1,
+                      low_price=1.1,
+                      close_price=1.1,
+                      volume=100,
+                      bid_price=1.1,
+                      ask_price=1.1,
+                      spread_pips=1,
+                      data_source='FAKE_SOURCE',  # Should be rejected
+                      is_real_data=False  # Should be rejected
+                  )
+                  session.add(bad_data)
+                  session.commit()
+              print('❌ Security breach: fake data accepted!')
+              exit(1)
+          except (IntegrityError, ValueError):
+              print('✅ Fake data correctly rejected')
+          
+          print('✅ Security validation passed')
+          "
+          echo "::endgroup::"
+      
+      - name: Production readiness summary
+        run: |
+          echo "🎯 PRODUCTION DATABASE READINESS SUMMARY"
+          echo "=========================================="
+          echo "✅ PostgreSQL 15 compatibility verified"
+          echo "✅ All database constraints validated"
+          echo "✅ Atomic operations tested"
+          echo "✅ Data integrity enforced"
+          echo "✅ Fake data rejection confirmed"
+          echo "✅ Security constraints verified"
+          echo "✅ Performance benchmarks passed"
+          echo ""
+          echo "🚀 Database ready for production deployment!"

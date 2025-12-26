@@ -1,0 +1,130 @@
+{
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "database": "velocity_trader",
+    "username": "velocity_trader",
+    "password_env": "POSTGRES_PASSWORD",
+    "pool_size": 20,
+    "max_overflow": 50,
+    "pool_timeout": 30,
+    "pool_recycle": 3600,
+    "ssl_mode": "prefer"
+  },
+  "mt5": {
+    "login": 10916362,
+    "server": "VantageInternational-Demo",
+    "password_env": "MT5_PASSWORD",
+    "timeout": 10000,
+    "symbols": [
+      "EURUSD+",
+      "GBPUSD+", 
+      "USDJPY+",
+      "USDCHF+",
+      "BTCUSD+",
+      "ETHUSD+",
+      "SPX500+",
+      "US30+",
+      "XAUUSD+",
+      "XAGUSD+"
+    ]
+  },
+  "trading": {
+    "modes": ["LIVE", "VIRTUAL"],
+    "max_positions": 10,
+    "risk_per_trade": 0.02,
+    "update_interval": 1.0,
+    "shadow_trading_enabled": true,
+    "virtual_learning_enabled": true
+  },
+  "agents": {
+    "berserker": {
+      "type": "BERSERKER",
+      "risk_tolerance": 0.8,
+      "exploration_rate": 0.15,
+      "preferred_regimes": ["CHAOTIC", "UNDERDAMPED"],
+      "position_size_range": [0.05, 0.20],
+      "stop_loss_pips": 30,
+      "take_profit_pips": 50
+    },
+    "sniper": {
+      "type": "SNIPER", 
+      "risk_tolerance": 0.6,
+      "exploration_rate": 0.08,
+      "preferred_regimes": ["CRITICALLY_DAMPED", "OVERDAMPED"],
+      "position_size_range": [0.02, 0.10],
+      "stop_loss_pips": 15,
+      "take_profit_pips": 30
+    }
+  },
+  "physics": {
+    "timeframes": ["M1", "M5", "M15", "H1"],
+    "lookback_periods": {
+      "momentum": 20,
+      "volatility": 50,
+      "trend": 100
+    },
+    "regime_classification": {
+      "momentum_threshold": 0.001,
+      "acceleration_threshold": 0.0005,
+      "volatility_threshold": 0.01
+    }
+  },
+  "performance": {
+    "use_multiprocessing": true,
+    "process_pool_size": 8,
+    "thread_pool_size": 32,
+    "batch_size": 100,
+    "max_memory_mb": 4096
+  },
+  "logging": {
+    "level": "INFO",
+    "structured": true,
+    "database_logging": true,
+    "file_logging": true,
+    "console_logging": true,
+    "health_check_interval": 60,
+    "error_alert_threshold": 10
+  },
+  "security": {
+    "data_validation": "STRICT",
+    "fake_data_rejection": true,
+    "vantage_server_only": true,
+    "real_data_enforcement": true,
+    "atomic_operations": true,
+    "encryption_at_rest": false,
+    "encryption_in_transit": true
+  },
+  "dashboard": {
+    "enabled": true,
+    "port": 8080,
+    "websocket_port": 8081,
+    "update_interval": 1.0,
+    "authentication": false,
+    "ssl": false
+  },
+  "monitoring": {
+    "health_checks": true,
+    "performance_tracking": true,
+    "error_tracking": true,
+    "resource_monitoring": true,
+    "database_monitoring": true,
+    "network_monitoring": true
+  },
+  "data_integrity": {
+    "constraints_enabled": true,
+    "validation_enabled": true,
+    "rollback_on_error": true,
+    "transaction_isolation": "READ_COMMITTED",
+    "concurrent_connections": true,
+    "backup_enabled": false,
+    "retention_days": 90
+  },
+  "environment": {
+    "name": "production",
+    "debug": false,
+    "testing": false,
+    "development": false,
+    "strict_mode": true
+  }
+}

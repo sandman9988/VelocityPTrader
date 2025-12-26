@@ -22,8 +22,11 @@ pytest>=7.4.0
 pytest-asyncio>=0.21.0
 pytest-cov>=4.1.0
 
-# Data storage
+# Data storage - PostgreSQL Enterprise Database
 sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0  # PostgreSQL adapter
+alembic>=1.12.0         # Database migrations
+asyncpg>=0.28.0         # Async PostgreSQL driver
 
 # Visualization (optional)
 matplotlib>=3.7.0
