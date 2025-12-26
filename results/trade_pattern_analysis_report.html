@@ -1,0 +1,680 @@
+
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Trade Pattern Analysis Report</title>
+            <style>
+                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #333; }
+                .container { max-width: 1600px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 30px; }
+                .header { text-align: center; margin-bottom: 40px; }
+                .header h1 { color: #2c3e50; margin: 0; font-size: 2.5em; }
+                .header p { color: #7f8c8d; font-size: 1.1em; margin: 10px 0 0 0; }
+                .summary-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 40px; }
+                .stat-card { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+                .stat-card.positive { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+                .stat-card.neutral { background: linear-gradient(135deg, #3498db, #2980b9); }
+                .stat-value { font-size: 2.2em; font-weight: bold; margin-bottom: 5px; }
+                .stat-label { font-size: 0.9em; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; }
+                .analysis-section { margin: 40px 0; }
+                .section-title { color: #2c3e50; font-size: 1.8em; margin-bottom: 20px; border-bottom: 3px solid #3498db; padding-bottom: 10px; }
+                .instrument-analysis { background: #f8f9fa; border-radius: 15px; padding: 25px; margin: 20px 0; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
+                .instrument-title { color: #2c3e50; font-size: 1.4em; margin-bottom: 20px; display: flex; align-items: center; }
+                .confidence-badge { background: #27ae60; color: white; padding: 4px 12px; border-radius: 15px; font-size: 0.8em; margin-left: auto; }
+                .confidence-badge.medium { background: #f39c12; }
+                .confidence-badge.low { background: #e74c3c; }
+                .pattern-comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin: 20px 0; }
+                .pattern-box { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+                .pattern-box.winning { border-left: 5px solid #27ae60; }
+                .pattern-box.losing { border-left: 5px solid #e74c3c; }
+                .pattern-title { font-weight: bold; margin-bottom: 15px; }
+                .pattern-title.winning { color: #27ae60; }
+                .pattern-title.losing { color: #e74c3c; }
+                .pattern-metric { display: flex; justify-content: space-between; margin: 8px 0; padding: 5px 0; border-bottom: 1px solid #ecf0f1; }
+                .metric-label { color: #7f8c8d; }
+                .metric-value { font-weight: bold; }
+                .insights-section { margin-top: 25px; }
+                .insights-list { background: #e8f6f3; border-radius: 10px; padding: 20px; }
+                .insight-item { margin: 10px 0; padding: 10px; background: white; border-radius: 8px; border-left: 4px solid #3498db; }
+                .recommendations-section { margin-top: 25px; }
+                .recommendations-list { background: #fef9e7; border-radius: 10px; padding: 20px; }
+                .recommendation-item { margin: 10px 0; padding: 10px; background: white; border-radius: 8px; border-left: 4px solid #f39c12; }
+                .key-differentiators { background: linear-gradient(135deg, #8e44ad, #9b59b6); color: white; border-radius: 15px; padding: 25px; margin: 30px 0; }
+                .differentiator-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px; }
+                .differentiator-card { background: rgba(255,255,255,0.1); border-radius: 10px; padding: 15px; text-align: center; }
+                .diff-value { font-size: 1.8em; font-weight: bold; margin-bottom: 5px; }
+                .diff-label { font-size: 0.9em; opacity: 0.9; }
+                .footer { text-align: center; margin-top: 40px; color: #7f8c8d; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>🔬 Trade Pattern Analysis Report</h1>
+                    <p>Comprehensive Analysis of Winning vs Losing Trade Patterns</p>
+                    <p>Generated on 2025-12-26 at 06:23:07</p>
+                </div>
+                
+                <div class="summary-stats">
+                    <div class="stat-card neutral">
+                        <div class="stat-value">8</div>
+                        <div class="stat-label">Instruments Analyzed</div>
+                    </div>
+                    <div class="stat-card positive">
+                        <div class="stat-value">111</div>
+                        <div class="stat-label">Winning Trades</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">163</div>
+                        <div class="stat-label">Losing Trades</div>
+                    </div>
+                    <div class="stat-card neutral">
+                        <div class="stat-value">78%</div>
+                        <div class="stat-label">Avg Confidence</div>
+                    </div>
+                </div>
+                
+                <div class="key-differentiators">
+                    <h2 style="margin-top: 0; text-align: center;">🎯 Key Pattern Differentiators</h2>
+                    <div class="differentiator-grid">
+                        <div class="differentiator-card">
+                            <div class="diff-value">+6.9x</div>
+                            <div class="diff-label">Best Efficiency Gap<br>(XAUUSD)</div>
+                        </div>
+                        <div class="differentiator-card">
+                            <div class="diff-value">-63min</div>
+                            <div class="diff-label">Avg Duration Difference</div>
+                        </div>
+                        <div class="differentiator-card">
+                            <div class="diff-value">+16,144,669</div>
+                            <div class="diff-label">Avg P&L Difference (bp)</div>
+                        </div>
+                        <div class="differentiator-card">
+                            <div class="diff-value">7</div>
+                            <div class="diff-label">Statistically Significant</div>
+                        </div>
+                    </div>
+                </div>
+        
+                <div class="analysis-section">
+                    <h2 class="section-title">📊 Individual Instrument Analysis</h2>
+        
+                    <div class="instrument-analysis">
+                        <div class="instrument-title">
+                            XAUUSD
+                            <span class="confidence-badge high">85% Confidence</span>
+                        </div>
+                        
+                        <div class="pattern-comparison">
+                            <div class="pattern-box winning">
+                                <div class="pattern-title winning">🏆 Winning Trades (19)</div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Average P&L:</span>
+                                    <span class="metric-value">+6,488,664bp</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Avg Duration:</span>
+                                    <span class="metric-value">129 minutes</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">MAE/MFE Efficiency:</span>
+                                    <span class="metric-value">6.87</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Agent:</span>
+                                    <span class="metric-value">SNIPER</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Regime:</span>
+                                    <span class="metric-value">UNDERDAMPED</span>
+                                </div>
+                            </div>
+                            
+                            <div class="pattern-box losing">
+                                <div class="pattern-title losing">❌ Losing Trades (18)</div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Average P&L:</span>
+                                    <span class="metric-value">-6bp</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Avg Duration:</span>
+                                    <span class="metric-value">188 minutes</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">MAE/MFE Efficiency:</span>
+                                    <span class="metric-value">0.00</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Agent:</span>
+                                    <span class="metric-value">BERSERKER</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Regime:</span>
+                                    <span class="metric-value">CHAOTIC</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="insights-section">
+                            <h4>🔍 Key Insights:</h4>
+                            <div class="insights-list">
+            <div class="insight-item">🎯 SNIPER agent dominates winning trades while BERSERKER dominates losing trades</div><div class="insight-item">🌊 UNDERDAMPED regime favors wins while CHAOTIC regime correlates with losses</div><div class="insight-item">⚡ Winning trades show 6.9x better MAE/MFE efficiency</div><div class="insight-item">⏱️  Winning trades held 60 minutes shorter on average</div>
+                            </div>
+                        </div>
+                        
+                        <div class="recommendations-section">
+                            <h4>🎯 Optimization Recommendations:</h4>
+                            <div class="recommendations-list">
+            <div class="recommendation-item">🎯 Increase SNIPER agent allocation for XAUUSD (currently 100% of winners)</div><div class="recommendation-item">🚫 Avoid trading XAUUSD in CHAOTIC regime (appears in 50% of losses)</div><div class="recommendation-item">🚫 Avoid trading XAUUSD in OVERDAMPED regime (appears in 50% of losses)</div><div class="recommendation-item">⚡ Implement tighter stop management - winners show 6.9x better efficiency</div><div class="recommendation-item">⏱️  Implement faster exits - winners average 129min vs 188min for losses</div>
+                            </div>
+                        </div>
+                    </div>
+            
+                    <div class="instrument-analysis">
+                        <div class="instrument-title">
+                            GBPUSD
+                            <span class="confidence-badge medium">70% Confidence</span>
+                        </div>
+                        
+                        <div class="pattern-comparison">
+                            <div class="pattern-box winning">
+                                <div class="pattern-title winning">🏆 Winning Trades (10)</div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Average P&L:</span>
+                                    <span class="metric-value">+109,502bp</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Avg Duration:</span>
+                                    <span class="metric-value">124 minutes</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">MAE/MFE Efficiency:</span>
+                                    <span class="metric-value">7.14</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Agent:</span>
+                                    <span class="metric-value">SNIPER</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Regime:</span>
+                                    <span class="metric-value">UNDERDAMPED</span>
+                                </div>
+                            </div>
+                            
+                            <div class="pattern-box losing">
+                                <div class="pattern-title losing">❌ Losing Trades (23)</div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Average P&L:</span>
+                                    <span class="metric-value">-100,229bp</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Avg Duration:</span>
+                                    <span class="metric-value">191 minutes</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">MAE/MFE Efficiency:</span>
+                                    <span class="metric-value">0.38</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Agent:</span>
+                                    <span class="metric-value">BERSERKER</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Regime:</span>
+                                    <span class="metric-value">OVERDAMPED</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="insights-section">
+                            <h4>🔍 Key Insights:</h4>
+                            <div class="insights-list">
+            <div class="insight-item">🎯 SNIPER agent dominates winning trades while BERSERKER dominates losing trades</div><div class="insight-item">🌊 UNDERDAMPED regime favors wins while OVERDAMPED regime correlates with losses</div><div class="insight-item">⚡ Winning trades show 6.8x better MAE/MFE efficiency</div><div class="insight-item">⏱️  Winning trades held 66 minutes shorter on average</div>
+                            </div>
+                        </div>
+                        
+                        <div class="recommendations-section">
+                            <h4>🎯 Optimization Recommendations:</h4>
+                            <div class="recommendations-list">
+            <div class="recommendation-item">🎯 Increase SNIPER agent allocation for GBPUSD (currently 100% of winners)</div><div class="recommendation-item">🚫 Avoid trading GBPUSD in OVERDAMPED regime (appears in 74% of losses)</div><div class="recommendation-item">🚫 Avoid trading GBPUSD in CHAOTIC regime (appears in 26% of losses)</div><div class="recommendation-item">⚡ Implement tighter stop management - winners show 6.8x better efficiency</div><div class="recommendation-item">⏱️  Implement faster exits - winners average 124min vs 191min for losses</div>
+                            </div>
+                        </div>
+                    </div>
+            
+                    <div class="instrument-analysis">
+                        <div class="instrument-title">
+                            NAS100
+                            <span class="confidence-badge high">85% Confidence</span>
+                        </div>
+                        
+                        <div class="pattern-comparison">
+                            <div class="pattern-box winning">
+                                <div class="pattern-title winning">🏆 Winning Trades (18)</div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Average P&L:</span>
+                                    <span class="metric-value">+2,482,184bp</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Avg Duration:</span>
+                                    <span class="metric-value">128 minutes</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">MAE/MFE Efficiency:</span>
+                                    <span class="metric-value">6.71</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Agent:</span>
+                                    <span class="metric-value">SNIPER</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Regime:</span>
+                                    <span class="metric-value">UNDERDAMPED</span>
+                                </div>
+                            </div>
+                            
+                            <div class="pattern-box losing">
+                                <div class="pattern-title losing">❌ Losing Trades (20)</div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Average P&L:</span>
+                                    <span class="metric-value">-6bp</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Avg Duration:</span>
+                                    <span class="metric-value">190 minutes</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">MAE/MFE Efficiency:</span>
+                                    <span class="metric-value">0.00</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Agent:</span>
+                                    <span class="metric-value">BERSERKER</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Regime:</span>
+                                    <span class="metric-value">CHAOTIC</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="insights-section">
+                            <h4>🔍 Key Insights:</h4>
+                            <div class="insights-list">
+            <div class="insight-item">🎯 SNIPER agent dominates winning trades while BERSERKER dominates losing trades</div><div class="insight-item">🌊 UNDERDAMPED regime favors wins while CHAOTIC regime correlates with losses</div><div class="insight-item">⚡ Winning trades show 6.7x better MAE/MFE efficiency</div><div class="insight-item">⏱️  Winning trades held 61 minutes shorter on average</div>
+                            </div>
+                        </div>
+                        
+                        <div class="recommendations-section">
+                            <h4>🎯 Optimization Recommendations:</h4>
+                            <div class="recommendations-list">
+            <div class="recommendation-item">🎯 Increase SNIPER agent allocation for NAS100 (currently 100% of winners)</div><div class="recommendation-item">🚫 Avoid trading NAS100 in CHAOTIC regime (appears in 50% of losses)</div><div class="recommendation-item">🚫 Avoid trading NAS100 in OVERDAMPED regime (appears in 50% of losses)</div><div class="recommendation-item">⚡ Implement tighter stop management - winners show 6.7x better efficiency</div><div class="recommendation-item">⏱️  Implement faster exits - winners average 128min vs 190min for losses</div>
+                            </div>
+                        </div>
+                    </div>
+            
+                    <div class="instrument-analysis">
+                        <div class="instrument-title">
+                            GER40
+                            <span class="confidence-badge high">85% Confidence</span>
+                        </div>
+                        
+                        <div class="pattern-comparison">
+                            <div class="pattern-box winning">
+                                <div class="pattern-title winning">🏆 Winning Trades (15)</div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Average P&L:</span>
+                                    <span class="metric-value">+71,526bp</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Avg Duration:</span>
+                                    <span class="metric-value">127 minutes</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">MAE/MFE Efficiency:</span>
+                                    <span class="metric-value">6.70</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Agent:</span>
+                                    <span class="metric-value">SNIPER</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Regime:</span>
+                                    <span class="metric-value">UNDERDAMPED</span>
+                                </div>
+                            </div>
+                            
+                            <div class="pattern-box losing">
+                                <div class="pattern-title losing">❌ Losing Trades (18)</div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Average P&L:</span>
+                                    <span class="metric-value">-6bp</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Avg Duration:</span>
+                                    <span class="metric-value">188 minutes</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">MAE/MFE Efficiency:</span>
+                                    <span class="metric-value">0.00</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Agent:</span>
+                                    <span class="metric-value">BERSERKER</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Regime:</span>
+                                    <span class="metric-value">CHAOTIC</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="insights-section">
+                            <h4>🔍 Key Insights:</h4>
+                            <div class="insights-list">
+            <div class="insight-item">🎯 SNIPER agent dominates winning trades while BERSERKER dominates losing trades</div><div class="insight-item">🌊 UNDERDAMPED regime favors wins while CHAOTIC regime correlates with losses</div><div class="insight-item">⚡ Winning trades show 6.7x better MAE/MFE efficiency</div><div class="insight-item">⏱️  Winning trades held 62 minutes shorter on average</div>
+                            </div>
+                        </div>
+                        
+                        <div class="recommendations-section">
+                            <h4>🎯 Optimization Recommendations:</h4>
+                            <div class="recommendations-list">
+            <div class="recommendation-item">🎯 Increase SNIPER agent allocation for GER40 (currently 100% of winners)</div><div class="recommendation-item">🚫 Avoid trading GER40 in CHAOTIC regime (appears in 50% of losses)</div><div class="recommendation-item">🚫 Avoid trading GER40 in OVERDAMPED regime (appears in 50% of losses)</div><div class="recommendation-item">⚡ Implement tighter stop management - winners show 6.7x better efficiency</div><div class="recommendation-item">⏱️  Implement faster exits - winners average 127min vs 188min for losses</div>
+                            </div>
+                        </div>
+                    </div>
+            
+                    <div class="instrument-analysis">
+                        <div class="instrument-title">
+                            ETHUSD
+                            <span class="confidence-badge medium">70% Confidence</span>
+                        </div>
+                        
+                        <div class="pattern-comparison">
+                            <div class="pattern-box winning">
+                                <div class="pattern-title winning">🏆 Winning Trades (11)</div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Average P&L:</span>
+                                    <span class="metric-value">+130,214bp</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Avg Duration:</span>
+                                    <span class="metric-value">125 minutes</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">MAE/MFE Efficiency:</span>
+                                    <span class="metric-value">7.05</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Agent:</span>
+                                    <span class="metric-value">SNIPER</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Regime:</span>
+                                    <span class="metric-value">UNDERDAMPED</span>
+                                </div>
+                            </div>
+                            
+                            <div class="pattern-box losing">
+                                <div class="pattern-title losing">❌ Losing Trades (21)</div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Average P&L:</span>
+                                    <span class="metric-value">-121,269bp</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Avg Duration:</span>
+                                    <span class="metric-value">190 minutes</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">MAE/MFE Efficiency:</span>
+                                    <span class="metric-value">0.38</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Agent:</span>
+                                    <span class="metric-value">BERSERKER</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Regime:</span>
+                                    <span class="metric-value">OVERDAMPED</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="insights-section">
+                            <h4>🔍 Key Insights:</h4>
+                            <div class="insights-list">
+            <div class="insight-item">🎯 SNIPER agent dominates winning trades while BERSERKER dominates losing trades</div><div class="insight-item">🌊 UNDERDAMPED regime favors wins while OVERDAMPED regime correlates with losses</div><div class="insight-item">⚡ Winning trades show 6.7x better MAE/MFE efficiency</div><div class="insight-item">⏱️  Winning trades held 65 minutes shorter on average</div>
+                            </div>
+                        </div>
+                        
+                        <div class="recommendations-section">
+                            <h4>🎯 Optimization Recommendations:</h4>
+                            <div class="recommendations-list">
+            <div class="recommendation-item">🎯 Increase SNIPER agent allocation for ETHUSD (currently 100% of winners)</div><div class="recommendation-item">🚫 Avoid trading ETHUSD in OVERDAMPED regime (appears in 76% of losses)</div><div class="recommendation-item">🚫 Avoid trading ETHUSD in CHAOTIC regime (appears in 24% of losses)</div><div class="recommendation-item">⚡ Implement tighter stop management - winners show 6.7x better efficiency</div><div class="recommendation-item">⏱️  Implement faster exits - winners average 125min vs 190min for losses</div>
+                            </div>
+                        </div>
+                    </div>
+            
+                    <div class="instrument-analysis">
+                        <div class="instrument-title">
+                            BTCUSD
+                            <span class="confidence-badge medium">70% Confidence</span>
+                        </div>
+                        
+                        <div class="pattern-comparison">
+                            <div class="pattern-box winning">
+                                <div class="pattern-title winning">🏆 Winning Trades (9)</div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Average P&L:</span>
+                                    <span class="metric-value">+75,769,369bp</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Avg Duration:</span>
+                                    <span class="metric-value">124 minutes</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">MAE/MFE Efficiency:</span>
+                                    <span class="metric-value">6.61</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Agent:</span>
+                                    <span class="metric-value">SNIPER</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Regime:</span>
+                                    <span class="metric-value">UNDERDAMPED</span>
+                                </div>
+                            </div>
+                            
+                            <div class="pattern-box losing">
+                                <div class="pattern-title losing">❌ Losing Trades (18)</div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Average P&L:</span>
+                                    <span class="metric-value">-6bp</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Avg Duration:</span>
+                                    <span class="metric-value">188 minutes</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">MAE/MFE Efficiency:</span>
+                                    <span class="metric-value">0.00</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Agent:</span>
+                                    <span class="metric-value">BERSERKER</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Regime:</span>
+                                    <span class="metric-value">CHAOTIC</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="insights-section">
+                            <h4>🔍 Key Insights:</h4>
+                            <div class="insights-list">
+            <div class="insight-item">🎯 SNIPER agent dominates winning trades while BERSERKER dominates losing trades</div><div class="insight-item">🌊 UNDERDAMPED regime favors wins while CHAOTIC regime correlates with losses</div><div class="insight-item">⚡ Winning trades show 6.6x better MAE/MFE efficiency</div><div class="insight-item">⏱️  Winning trades held 64 minutes shorter on average</div>
+                            </div>
+                        </div>
+                        
+                        <div class="recommendations-section">
+                            <h4>🎯 Optimization Recommendations:</h4>
+                            <div class="recommendations-list">
+            <div class="recommendation-item">🎯 Increase SNIPER agent allocation for BTCUSD (currently 100% of winners)</div><div class="recommendation-item">🚫 Avoid trading BTCUSD in CHAOTIC regime (appears in 50% of losses)</div><div class="recommendation-item">🚫 Avoid trading BTCUSD in OVERDAMPED regime (appears in 50% of losses)</div><div class="recommendation-item">⚡ Implement tighter stop management - winners show 6.6x better efficiency</div><div class="recommendation-item">⏱️  Implement faster exits - winners average 124min vs 188min for losses</div>
+                            </div>
+                        </div>
+                    </div>
+            
+                    <div class="instrument-analysis">
+                        <div class="instrument-title">
+                            US30
+                            <span class="confidence-badge high">85% Confidence</span>
+                        </div>
+                        
+                        <div class="pattern-comparison">
+                            <div class="pattern-box winning">
+                                <div class="pattern-title winning">🏆 Winning Trades (15)</div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Average P&L:</span>
+                                    <span class="metric-value">+22,796,937bp</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Avg Duration:</span>
+                                    <span class="metric-value">127 minutes</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">MAE/MFE Efficiency:</span>
+                                    <span class="metric-value">6.70</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Agent:</span>
+                                    <span class="metric-value">SNIPER</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Regime:</span>
+                                    <span class="metric-value">UNDERDAMPED</span>
+                                </div>
+                            </div>
+                            
+                            <div class="pattern-box losing">
+                                <div class="pattern-title losing">❌ Losing Trades (24)</div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Average P&L:</span>
+                                    <span class="metric-value">-21,087,178bp</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Avg Duration:</span>
+                                    <span class="metric-value">192 minutes</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">MAE/MFE Efficiency:</span>
+                                    <span class="metric-value">0.38</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Agent:</span>
+                                    <span class="metric-value">BERSERKER</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Regime:</span>
+                                    <span class="metric-value">OVERDAMPED</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="insights-section">
+                            <h4>🔍 Key Insights:</h4>
+                            <div class="insights-list">
+            <div class="insight-item">🎯 SNIPER agent dominates winning trades while BERSERKER dominates losing trades</div><div class="insight-item">🌊 UNDERDAMPED regime favors wins while OVERDAMPED regime correlates with losses</div><div class="insight-item">⚡ Winning trades show 6.3x better MAE/MFE efficiency</div><div class="insight-item">⏱️  Winning trades held 64 minutes shorter on average</div>
+                            </div>
+                        </div>
+                        
+                        <div class="recommendations-section">
+                            <h4>🎯 Optimization Recommendations:</h4>
+                            <div class="recommendations-list">
+            <div class="recommendation-item">🎯 Increase SNIPER agent allocation for US30 (currently 100% of winners)</div><div class="recommendation-item">🚫 Avoid trading US30 in OVERDAMPED regime (appears in 75% of losses)</div><div class="recommendation-item">🚫 Avoid trading US30 in CHAOTIC regime (appears in 25% of losses)</div><div class="recommendation-item">⚡ Implement tighter stop management - winners show 6.3x better efficiency</div><div class="recommendation-item">⏱️  Implement faster exits - winners average 127min vs 192min for losses</div>
+                            </div>
+                        </div>
+                    </div>
+            
+                    <div class="instrument-analysis">
+                        <div class="instrument-title">
+                            EURUSD
+                            <span class="confidence-badge medium">70% Confidence</span>
+                        </div>
+                        
+                        <div class="pattern-comparison">
+                            <div class="pattern-box winning">
+                                <div class="pattern-title winning">🏆 Winning Trades (14)</div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Average P&L:</span>
+                                    <span class="metric-value">+125bp</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Avg Duration:</span>
+                                    <span class="metric-value">126 minutes</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">MAE/MFE Efficiency:</span>
+                                    <span class="metric-value">0.18</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Agent:</span>
+                                    <span class="metric-value">SNIPER</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Regime:</span>
+                                    <span class="metric-value">UNDERDAMPED</span>
+                                </div>
+                            </div>
+                            
+                            <div class="pattern-box losing">
+                                <div class="pattern-title losing">❌ Losing Trades (21)</div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Average P&L:</span>
+                                    <span class="metric-value">-128bp</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Avg Duration:</span>
+                                    <span class="metric-value">190 minutes</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">MAE/MFE Efficiency:</span>
+                                    <span class="metric-value">0.06</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Agent:</span>
+                                    <span class="metric-value">BERSERKER</span>
+                                </div>
+                                <div class="pattern-metric">
+                                    <span class="metric-label">Top Regime:</span>
+                                    <span class="metric-value">OVERDAMPED</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="insights-section">
+                            <h4>🔍 Key Insights:</h4>
+                            <div class="insights-list">
+            <div class="insight-item">🎯 SNIPER agent dominates winning trades while BERSERKER dominates losing trades</div><div class="insight-item">🌊 UNDERDAMPED regime favors wins while OVERDAMPED regime correlates with losses</div><div class="insight-item">⏱️  Winning trades held 64 minutes shorter on average</div>
+                            </div>
+                        </div>
+                        
+                        <div class="recommendations-section">
+                            <h4>🎯 Optimization Recommendations:</h4>
+                            <div class="recommendations-list">
+            <div class="recommendation-item">🎯 Increase SNIPER agent allocation for EURUSD (currently 100% of winners)</div><div class="recommendation-item">🚫 Avoid trading EURUSD in OVERDAMPED regime (appears in 76% of losses)</div><div class="recommendation-item">🚫 Avoid trading EURUSD in CHAOTIC regime (appears in 24% of losses)</div><div class="recommendation-item">⏱️  Implement faster exits - winners average 126min vs 190min for losses</div>
+                            </div>
+                        </div>
+                    </div>
+            
+                </div>
+                
+                <div class="footer">
+                    <p>🤖 Generated with Advanced Trade Pattern Analysis Engine</p>
+                    <p>Use these insights to optimize your trading strategy and improve performance</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        

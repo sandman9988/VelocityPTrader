@@ -1,0 +1,12 @@
+{
+    "mt5_path": "C:\\DevCenter\\MT5-Unified\\MT5-Core\\Terminal/terminal64.exe",
+    "mt5_directory": "C:\\DevCenter\\MT5-Unified\\MT5-Core\\Terminal",
+    "wsl_mt5_path": "/mnt/c/DevCenter/MT5-Unified/MT5-Core/Terminal",
+    "login": null,
+    "password": null,
+    "server": null,
+    "timeout": 60000,
+    "data_path": "C:\\DevCenter\\MT5-Unified\\MT5-Core\\Terminal/MQL5/Files",
+    "experts_path": "C:\\DevCenter\\MT5-Unified\\MT5-Core\\Terminal/MQL5/Experts",
+    "indicators_path": "C:\\DevCenter\\MT5-Unified\\MT5-Core\\Terminal/MQL5/Indicators"
+}

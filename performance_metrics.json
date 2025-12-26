@@ -1,0 +1,30 @@
+{
+  "timestamp": "2025-12-26T16:39:48.197498",
+  "active_agents": [
+    "BERSERKER",
+    "SNIPER"
+  ],
+  "symbols": [
+    "EURUSD",
+    "USDJPY",
+    "AUDUSD",
+    "AUDCAD+",
+    "AUDCHF+",
+    "AUDJPY+",
+    "AUDUSD+",
+    "CADCHF+",
+    "CADJPY+",
+    "EURCAD+",
+    "EURCHF+",
+    "EURGBP+",
+    "EURNOK+",
+    "EURSEK+",
+    "EURUSD+",
+    "GBPCAD+",
+    "GBPCHF+",
+    "GBPUSD+",
+    "USDCAD+",
+    "USDCHF+"
+  ],
+  "performance": {}
+}

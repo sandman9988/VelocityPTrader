@@ -1,0 +1,21 @@
+{
+  "account": {
+    "server": "VantageInternational-Demo",
+    "login": 10916362,
+    "password": "YOUR_PASSWORD_HERE",
+    "timeout": 60000,
+    "portable": false
+  },
+  "symbols": {
+    "forex": ["EURUSD+", "GBPUSD+", "USDJPY+", "USDCHF+"],
+    "crypto": ["BTCUSD+", "ETHUSD+"],
+    "indices": ["SPX500+", "US30+"],
+    "commodities": ["XAUUSD+", "XAGUSD+"]
+  },
+  "timeframes": ["M1", "M5", "M15", "H1"],
+  "data_settings": {
+    "history_bars": 1000,
+    "tick_buffer_size": 10000,
+    "update_interval_ms": 1000
+  }
+}

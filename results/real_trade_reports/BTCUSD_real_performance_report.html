@@ -1,0 +1,827 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTCUSD - Trading Performance Report</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #FFFFFF;
+            color: #333333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2E86AB, #A23B72);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .section {
+            background: #FFFFFF;
+            border: 1px solid #E0E0E0;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+        }
+        
+        .section h2 {
+            color: #2E86AB;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #2E86AB;
+            padding-bottom: 10px;
+        }
+        
+        .section h3 {
+            color: #A23B72;
+            font-size: 1.4em;
+            margin: 20px 0 15px 0;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .metric-card {
+            background: #FFFFFF;
+            border: 2px solid #E0E0E0;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+        
+        .metric-value {
+            font-size: 2.2em;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .metric-label {
+            font-size: 0.9em;
+            color: #A23B72;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .positive { color: #F18F01; }
+        .negative { color: #C73E1D; }
+        .neutral { color: #A23B72; }
+        
+        .chart-container {
+            margin: 20px 0;
+            padding: 20px;
+            background: #FFFFFF;
+            border-radius: 8px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #E0E0E0;
+        }
+        
+        th {
+            background: #2E86AB;
+            color: white;
+            font-weight: 600;
+        }
+        
+        tr:nth-child(even) {
+            background: rgba(0,0,0,0.02);
+        }
+        
+        .recommendation {
+            background: linear-gradient(45deg, #2E86AB15, #A23B7215);
+            border-left: 4px solid #2E86AB;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        
+        .recommendation-icon {
+            font-size: 1.2em;
+            margin-right: 10px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #A23B72;
+            border-top: 1px solid #E0E0E0;
+            margin-top: 40px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin: 2px;
+        }
+        
+        .badge-excellent { background: #F18F01; color: white; }
+        .badge-good { background: #2E86AB; color: white; }
+        .badge-warning { background: #C73E1D; color: white; }
+        .badge-poor { background: #333333; color: white; }
+        
+        .progress-bar {
+            background: #E0E0E0;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2E86AB, #A23B72);
+            transition: width 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <div class="header">
+            <h1>BTCUSD Trading Performance</h1>
+            <div class="subtitle">
+                Comprehensive Analysis Report • Generated December 26, 2025 at 06:16 AM
+                <span class="badge badge-warning" style="margin-left: 20px; font-size: 1.1em;">Grade: C+</span>
+            </div>
+        </div>
+        
+        
+        <div class="section">
+            <h2>📊 Executive Summary</h2>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value positive">
+                        +697422653.28bp
+                    </div>
+                    <div class="metric-label">Total P&L</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value neutral">27</div>
+                    <div class="metric-label">Total Trades</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value negative">
+                        37.0%
+                    </div>
+                    <div class="metric-label">Win Rate</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value positive">
+                        1.46
+                    </div>
+                    <div class="metric-label">Sharpe Ratio</div>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
+                <div>
+                    <h4>🎯 Performance Assessment</h4>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        <li><strong>Risk Level:</strong> <span class="badge badge-poor">High Risk</span></li>
+                        <li><strong>Consistency:</strong> <span class="badge badge-poor">Poor</span></li>
+                        <li><strong>Trade Efficiency:</strong> <span class="badge badge-warning">Moderate</span></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>📈 Key Highlights</h4>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        <li>Expectancy: <strong>+25830468.64bp per trade</strong></li>
+                        <li>Profit Factor: <strong>1.27</strong></li>
+                        <li>Max Drawdown: <strong>1309011299.2%</strong></li>
+                        <li>MAE Efficiency: <strong>1.22</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        
+        <div class="section">
+            <h2>🔍 Advanced Performance Metrics</h2>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value positive">
+                        1.27
+                    </div>
+                    <div class="metric-label">Omega Ratio</div>
+                    <div style="font-size: 0.8em; margin-top: 5px; color: #666;">
+                        Fair
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value negative">
+                        -2.79
+                    </div>
+                    <div class="metric-label">Z-Factor</div>
+                    <div style="font-size: 0.8em; margin-top: 5px; color: #666;">
+                        Significant
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value neutral">
+                        7.8%
+                    </div>
+                    <div class="metric-label">Kelly %</div>
+                    <div style="font-size: 0.8em; margin-top: 5px; color: #666;">
+                        Optimal Position Size
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value negative">
+                        965.89
+                    </div>
+                    <div class="metric-label">Ulcer Index</div>
+                    <div style="font-size: 0.8em; margin-top: 5px; color: #666;">
+                        Drawdown Pain
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value negative">
+                        0.48
+                    </div>
+                    <div class="metric-label">SQN</div>
+                    <div style="font-size: 0.8em; margin-top: 5px; color: #666;">
+                        System Quality Number
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value positive">
+                        6739177.71
+                    </div>
+                    <div class="metric-label">Martin Ratio</div>
+                    <div style="font-size: 0.8em; margin-top: 5px; color: #666;">
+                        UPI Ratio
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        
+        <div class="section">
+            <h2>🎯 MAE/MFE Efficiency Analysis</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px;">
+                <div>
+                    <h3>Excursion Metrics</h3>
+                    <table>
+                        <tr><th>Metric</th><th>Value</th><th>Assessment</th></tr>
+                        <tr>
+                            <td>Average MAE</td>
+                            <td>1731.57bp</td>
+                            <td><span class="badge badge-poor">
+                                High
+                            </span></td>
+                        </tr>
+                        <tr>
+                            <td>Average MFE</td>
+                            <td>2114.16bp</td>
+                            <td><span class="badge badge-excellent">
+                                Excellent
+                            </span></td>
+                        </tr>
+                        <tr>
+                            <td>MAE Efficiency</td>
+                            <td>1.22</td>
+                            <td><span class="badge badge-warning">
+                                Fair
+                            </span></td>
+                        </tr>
+                        <tr>
+                            <td>MFE Realization</td>
+                            <td>1221784.3%</td>
+                            <td><span class="badge badge-excellent">
+                                Excellent
+                            </span></td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div>
+                    <h3>Trade Quality Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="maeChart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 25px;">
+                <h3>💡 MAE/MFE Insights</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 15px;">
+                    
+                    <div class='recommendation'><span class='recommendation-icon'>⚠️</span><strong>Low Efficiency:</strong> MAE efficiency of 1.22 suggests room for improvement in entry timing and stop management.</div>
+                    <div class='recommendation'><span class='recommendation-icon'>🎯</span><strong>Good Realization:</strong> You're capturing 1221784.3% of favorable moves - solid profit taking.</div>
+                    
+                </div>
+            </div>
+        </div>
+        
+        
+        <div class="section">
+            <h2>⚠️ Risk Analysis</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px;">
+                <div>
+                    <h3>Drawdown Metrics</h3>
+                    <div style="margin: 15px 0;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span>Max Drawdown</span>
+                            <span><strong>1309011299.2%</strong></span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                    
+                    <table>
+                        <tr><th>Risk Metric</th><th>Value</th><th>Rating</th></tr>
+                        <tr>
+                            <td>Value at Risk (95%)</td>
+                            <td>-256071538.70bp</td>
+                            <td><span class="badge badge-poor">
+                                High
+                            </span></td>
+                        </tr>
+                        <tr>
+                            <td>Conditional VaR</td>
+                            <td>-268628345.88bp</td>
+                            <td><span class="badge badge-poor">
+                                High
+                            </span></td>
+                        </tr>
+                        <tr>
+                            <td>Lake Ratio</td>
+                            <td>81.5%</td>
+                            <td><span class="badge badge-poor">
+                                Poor
+                            </span></td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div>
+                    <h3>Risk-Adjusted Returns</h3>
+                    <div class="chart-container">
+                        <canvas id="riskChart" width="400" height="300"></canvas>
+                    </div>
+                    
+                    <div style="margin-top: 15px;">
+                        <h4>Risk Assessment</h4>
+                        <ul style="margin: 10px 0; padding-left: 20px;">
+                            <li><strong>Sortino Ratio:</strong> 6.00 
+                                <span class="badge badge-excellent">
+                                    Excellent
+                                </span>
+                            </li>
+                            <li><strong>Calmar Ratio:</strong> 4.97
+                                <span class="badge badge-excellent">
+                                    Excellent
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        
+        <div class="section">
+            <h2>⚡ Efficiency Analysis</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px;">
+                <div>
+                    <h3>Trading Efficiency</h3>
+                    <table>
+                        <tr><th>Efficiency Metric</th><th>Value</th><th>Grade</th></tr>
+                        <tr>
+                            <td>Trade Efficiency</td>
+                            <td>2.31</td>
+                            <td><span class="badge badge-excellent">
+                                A+
+                            </span></td>
+                        </tr>
+                        <tr>
+                            <td>Efficiency Ratio</td>
+                            <td>0.01</td>
+                            <td><span class="badge badge-poor">
+                                D
+                            </span></td>
+                        </tr>
+                        <tr>
+                            <td>K-Factor</td>
+                            <td>2.47</td>
+                            <td><span class="badge badge-excellent">
+                                Excellent
+                            </span></td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div>
+                    <h3>Time Analysis</h3>
+                    <table>
+                        <tr><th>Time Metric</th><th>Value</th><th>Note</th></tr>
+                        <tr>
+                            <td>Avg Hold Time</td>
+                            <td>29.3h</td>
+                            <td>Overall average</td>
+                        </tr>
+                        <tr>
+                            <td>Win Hold Time</td>
+                            <td>40.4h</td>
+                            <td>Winning trades</td>
+                        </tr>
+                        <tr>
+                            <td>Loss Hold Time</td>
+                            <td>22.8h</td>
+                            <td>Losing trades</td>
+                        </tr>
+                        <tr>
+                            <td>Max Consecutive Wins</td>
+                            <td>3</td>
+                            <td>Best streak</td>
+                        </tr>
+                        <tr>
+                            <td>Max Consecutive Losses</td>
+                            <td>7</td>
+                            <td>Worst streak</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        
+        <div class="section">
+            <h2>📋 Trade Analysis</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px;">
+                <div>
+                    <h3>Trade Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="tradeDistChart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3>Notable Trades</h3>
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: green;">🏆 Best Trade</h4>
+                        <p><strong>Trade ID:</strong> BTCUSD_H4_0006<br><strong>P&L:</strong> +741874146.33bp<br><strong>Efficiency:</strong> 5.70<br><strong>Hold Time:</strong> 4.0h</p>
+                    </div>
+                    
+                    <div>
+                        <h4 style="color: red;">📉 Worst Trade</h4>
+                        <p><strong>Trade ID:</strong> BTCUSD_H4_0002<br><strong>P&L:</strong> -281185153.06bp<br><strong>MAE:</strong> 4533.45bp<br><strong>Hold Time:</strong> 16.0h</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 25px;">
+                <h3>Recent Trades (Last 10)</h3>
+                <table>
+                    <tr>
+                        <th>Trade ID</th>
+                        <th>Entry Time</th>
+                        <th>Direction</th>
+                        <th>P&L (bp)</th>
+                        <th>MAE</th>
+                        <th>MFE</th>
+                        <th>Efficiency</th>
+                        <th>Hold Time</th>
+                    </tr>
+                    
+            <tr>
+                <td>BTCUSD_D1_0001</td>
+                <td>04/06 06:16</td>
+                <td>LONG</td>
+                <td class="negative">-162654225.79</td>
+                <td>2407.67</td>
+                <td>931.93</td>
+                <td>0.39</td>
+                <td>24.0h</td>
+            </tr>
+            
+            <tr>
+                <td>BTCUSD_D1_0002</td>
+                <td>10/23 06:16</td>
+                <td>LONG</td>
+                <td class="positive">+467020277.39</td>
+                <td>591.16</td>
+                <td>5074.73</td>
+                <td>8.58</td>
+                <td>48.0h</td>
+            </tr>
+            
+            <tr>
+                <td>BTCUSD_D1_0003</td>
+                <td>01/06 06:16</td>
+                <td>SHORT</td>
+                <td class="negative">-136503662.13</td>
+                <td>2075.56</td>
+                <td>897.00</td>
+                <td>0.43</td>
+                <td>48.0h</td>
+            </tr>
+            
+            <tr>
+                <td>BTCUSD_D1_0004</td>
+                <td>03/22 06:16</td>
+                <td>SHORT</td>
+                <td class="negative">-220039316.43</td>
+                <td>2361.49</td>
+                <td>689.64</td>
+                <td>0.29</td>
+                <td>48.0h</td>
+            </tr>
+            
+            <tr>
+                <td>BTCUSD_D1_0005</td>
+                <td>06/30 06:16</td>
+                <td>SHORT</td>
+                <td class="negative">-202766420.60</td>
+                <td>2204.50</td>
+                <td>453.98</td>
+                <td>0.21</td>
+                <td>72.0h</td>
+            </tr>
+            
+            <tr>
+                <td>BTCUSD_D1_0006</td>
+                <td>10/08 06:16</td>
+                <td>LONG</td>
+                <td class="positive">+248731417.54</td>
+                <td>938.20</td>
+                <td>3705.59</td>
+                <td>3.95</td>
+                <td>144.0h</td>
+            </tr>
+            
+            <tr>
+                <td>BTCUSD_D1_0007</td>
+                <td>08/29 06:16</td>
+                <td>SHORT</td>
+                <td class="positive">+173421326.78</td>
+                <td>1015.12</td>
+                <td>1753.19</td>
+                <td>1.73</td>
+                <td>144.0h</td>
+            </tr>
+            
+            <tr>
+                <td>BTCUSD_D1_0008</td>
+                <td>05/05 06:16</td>
+                <td>SHORT</td>
+                <td class="positive">+200555631.35</td>
+                <td>680.10</td>
+                <td>2734.31</td>
+                <td>4.02</td>
+                <td>24.0h</td>
+            </tr>
+            
+            <tr>
+                <td>BTCUSD_D1_0009</td>
+                <td>02/04 06:16</td>
+                <td>LONG</td>
+                <td class="negative">-117767606.50</td>
+                <td>1360.31</td>
+                <td>314.58</td>
+                <td>0.23</td>
+                <td>48.0h</td>
+            </tr>
+            
+            <tr>
+                <td>BTCUSD_D1_0010</td>
+                <td>09/17 06:16</td>
+                <td>LONG</td>
+                <td class="negative">-130828252.73</td>
+                <td>1707.25</td>
+                <td>774.97</td>
+                <td>0.45</td>
+                <td>48.0h</td>
+            </tr>
+            
+                </table>
+            </div>
+        </div>
+        
+        
+        <div class="section">
+            <h2>💡 Recommendations & Action Items</h2>
+            
+            <div class='recommendation'>
+                <span class='recommendation-icon'>🎯</span>
+                <strong>Improve Win Rate:</strong> Current win rate of 37.0% is below breakeven. Focus on better entry signals and market timing.
+            </div>
+            
+            <div class='recommendation'>
+                <span class='recommendation-icon'>⏰</span>
+                <strong>Optimize Entry Timing:</strong> MAE efficiency of 1.22 suggests entries could be better timed. Consider tighter entry criteria.
+            </div>
+            
+            <div class='recommendation'>
+                <span class='recommendation-icon'>🛡️</span>
+                <strong>Enhance Risk Management:</strong> Max drawdown of 1309011299.2% is high. Consider tighter stop losses and position sizing.
+            </div>
+            
+        </div>
+        
+        
+        <div class="footer">
+            <p>Report generated by Advanced Performance Analytics Engine</p>
+            <p>For questions or support, contact your trading system administrator</p>
+            <p style="font-size: 0.8em; margin-top: 15px;">
+                Disclaimer: This report is for informational purposes only. Past performance does not guarantee future results.
+                Trading involves risk and may not be suitable for all investors.
+            </p>
+        </div>
+        
+    </div>
+    
+    
+        <script>
+        // MAE/MFE Scatter Chart
+        const maeCtx = document.getElementById('maeChart').getContext('2d');
+        new Chart(maeCtx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Trades (MAE vs MFE)',
+                    data: [{"{'x': 2839.882600373385, 'y': 291.82439309050096}"}, {"{'x': 1124.604956789306, 'y': 2658.9436859832276}"}, {"{'x': 2319.0434253587373, 'y': 1345.5935303103397}"}, {"{'x': 1888.7361217937942, 'y': 1447.8074809319587}"}, {"{'x': 808.1444364279778, 'y': 271.9985595809303}"}, {"{'x': 299.1418732990387, 'y': 814.1986132039347}"}, {"{'x': 70.57849685095061, 'y': 866.805711528752}"}, {"{'x': 1082.3702435829364, 'y': 1476.085776156091}"}, {"{'x': 688.9501420385604, 'y': 1061.1823292299123}"}, {"{'x': 1033.3679545915948, 'y': 223.2364822806121}"}, {"{'x': 2917.6855149782205, 'y': 2717.3710502438335}"}, {"{'x': 4533.445191216517, 'y': 2824.5949971336886}"}, {"{'x': 1872.068295753459, 'y': 1189.4646860490757}"}, {"{'x': 2622.786706949133, 'y': 313.063199758064}"}, {"{'x': 4957.132211462158, 'y': 5633.471475512459}"}, {"{'x': 1720.6487922939123, 'y': 9815.791025443905}"}, {"{'x': 632.5760001868912, 'y': 6800.965069760685}"}, {"{'x': 2407.6711852331937, 'y': 931.930798661444}"}, {"{'x': 591.1581034571136, 'y': 5074.732633335603}"}, {"{'x': 2075.5558534233714, 'y': 897.0037183314271}"}, {"{'x': 2361.4918769118303, 'y': 689.6426975528957}"}, {"{'x': 2204.503695893727, 'y': 453.98103719695064}"}, {"{'x': 938.2016165446767, 'y': 3705.5920955306865}"}, {"{'x': 1015.1169346860625, 'y': 1753.1856869010298}"}, {"{'x': 680.1013725519879, 'y': 2734.3052234888237}"}, {"{'x': 1360.309884941882, 'y': 314.5775015587278}"}, {"{'x': 1707.245465341046, 'y': 774.9700126486277}"}],
+                    backgroundColor: 'rgba(46, 134, 171, 0.6)',
+                    borderColor: 'rgba(46, 134, 171, 1)',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'MAE vs MFE Distribution'
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'MAE (bp)'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'MFE (bp)'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Risk Metrics Chart
+        const riskCtx = document.getElementById('riskChart').getContext('2d');
+        new Chart(riskCtx, {
+            type: 'radar',
+            data: {
+                labels: ['Sharpe Ratio', 'Sortino Ratio', 'Calmar Ratio', 'Omega Ratio', 'K-Factor'],
+                datasets: [{
+                    label: 'Performance Metrics',
+                    data: [1.46, 6.00, 4.97, 1.27, 2.47],
+                    backgroundColor: 'rgba(162, 59, 114, 0.2)',
+                    borderColor: 'rgba(162, 59, 114, 1)',
+                    pointBackgroundColor: 'rgba(162, 59, 114, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(162, 59, 114, 1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Risk-Adjusted Performance Radar'
+                    }
+                },
+                scales: {
+                    r: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // Trade Distribution Chart
+        const tradeDistCtx = document.getElementById('tradeDistChart').getContext('2d');
+        const pnlBuckets = {
+            'Large Loss (< -100bp)': 17,
+            'Loss (-100 to 0bp)': 0,
+            'Small Win (0 to 50bp)': 0,
+            'Good Win (50 to 200bp)': 0,
+            'Large Win (> 200bp)': 10
+        };
+        
+        new Chart(tradeDistCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(pnlBuckets),
+                datasets: [{
+                    data: Object.values(pnlBuckets),
+                    backgroundColor: [
+                        '#C73E1D',
+                        '#F18F01', 
+                        '#A23B72',
+                        '#2E86AB',
+                        '#10B981'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'P&L Distribution'
+                    },
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+        </script>
+        
+</body>
+</html>
+        

@@ -1,0 +1,32 @@
+{
+  "execution_summary": {
+    "total_backtests": 24,
+    "total_symbols": 8,
+    "total_trades": 274,
+    "execution_time_seconds": 9.444000005722046
+  },
+  "overall_performance": {
+    "total_net_pnl": 316095229.41134703,
+    "total_winning_trades": 114,
+    "overall_win_rate": 41.605839416058394
+  },
+  "best_performer": {
+    "symbol": "BTCUSD",
+    "timeframe": "H4",
+    "net_pnl": 942229131.0947431,
+    "win_rate": 42.857142857142854,
+    "trade_count": 7
+  },
+  "worst_performer": {
+    "symbol": "US30",
+    "timeframe": "D1",
+    "net_pnl": -674227080.1125797,
+    "win_rate": 31.25,
+    "trade_count": 16
+  },
+  "summary": {
+    "total_symbols_tested": 8,
+    "total_timeframes_tested": 3,
+    "total_combinations": 24
+  }
+}

@@ -1,0 +1,19 @@
+{
+    "start_date": "2023-01-01",
+    "end_date": "2025-12-26",
+    "timeframes": [
+        "M1",
+        "M5",
+        "M15",
+        "H1",
+        "H4",
+        "D1"
+    ],
+    "initial_capital": 100000.0,
+    "max_instruments": 50,
+    "risk_per_trade": 0.02,
+    "enable_rl_learning": true,
+    "save_detailed_logs": true,
+    "output_directory": "/home/renier/ai_trading_system/results",
+    "data_directory": "/home/renier/ai_trading_system/data"
+}

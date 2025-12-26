@@ -1,0 +1,827 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GBPUSD - Trading Performance Report</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #FFFFFF;
+            color: #333333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2E86AB, #A23B72);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .section {
+            background: #FFFFFF;
+            border: 1px solid #E0E0E0;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+        }
+        
+        .section h2 {
+            color: #2E86AB;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #2E86AB;
+            padding-bottom: 10px;
+        }
+        
+        .section h3 {
+            color: #A23B72;
+            font-size: 1.4em;
+            margin: 20px 0 15px 0;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .metric-card {
+            background: #FFFFFF;
+            border: 2px solid #E0E0E0;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+        
+        .metric-value {
+            font-size: 2.2em;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .metric-label {
+            font-size: 0.9em;
+            color: #A23B72;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .positive { color: #F18F01; }
+        .negative { color: #C73E1D; }
+        .neutral { color: #A23B72; }
+        
+        .chart-container {
+            margin: 20px 0;
+            padding: 20px;
+            background: #FFFFFF;
+            border-radius: 8px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #E0E0E0;
+        }
+        
+        th {
+            background: #2E86AB;
+            color: white;
+            font-weight: 600;
+        }
+        
+        tr:nth-child(even) {
+            background: rgba(0,0,0,0.02);
+        }
+        
+        .recommendation {
+            background: linear-gradient(45deg, #2E86AB15, #A23B7215);
+            border-left: 4px solid #2E86AB;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        
+        .recommendation-icon {
+            font-size: 1.2em;
+            margin-right: 10px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #A23B72;
+            border-top: 1px solid #E0E0E0;
+            margin-top: 40px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin: 2px;
+        }
+        
+        .badge-excellent { background: #F18F01; color: white; }
+        .badge-good { background: #2E86AB; color: white; }
+        .badge-warning { background: #C73E1D; color: white; }
+        .badge-poor { background: #333333; color: white; }
+        
+        .progress-bar {
+            background: #E0E0E0;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2E86AB, #A23B72);
+            transition: width 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <div class="header">
+            <h1>GBPUSD Trading Performance</h1>
+            <div class="subtitle">
+                Comprehensive Analysis Report • Generated December 26, 2025 at 06:11 AM
+                <span class="badge badge-poor" style="margin-left: 20px; font-size: 1.1em;">Grade: D</span>
+            </div>
+        </div>
+        
+        
+        <div class="section">
+            <h2>📊 Executive Summary</h2>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value negative">
+                        -25867.30bp
+                    </div>
+                    <div class="metric-label">Total P&L</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value neutral">1,574</div>
+                    <div class="metric-label">Total Trades</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value negative">
+                        18.6%
+                    </div>
+                    <div class="metric-label">Win Rate</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value negative">
+                        -11.41
+                    </div>
+                    <div class="metric-label">Sharpe Ratio</div>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
+                <div>
+                    <h4>🎯 Performance Assessment</h4>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        <li><strong>Risk Level:</strong> <span class="badge badge-poor">High Risk</span></li>
+                        <li><strong>Consistency:</strong> <span class="badge badge-poor">Poor</span></li>
+                        <li><strong>Trade Efficiency:</strong> <span class="badge badge-warning">Moderate</span></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>📈 Key Highlights</h4>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        <li>Expectancy: <strong>-16.43bp per trade</strong></li>
+                        <li>Profit Factor: <strong>0.03</strong></li>
+                        <li>Max Drawdown: <strong>26677.4%</strong></li>
+                        <li>MAE Efficiency: <strong>1.70</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        
+        <div class="section">
+            <h2>🔍 Advanced Performance Metrics</h2>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value negative">
+                        0.03
+                    </div>
+                    <div class="metric-label">Omega Ratio</div>
+                    <div style="font-size: 0.8em; margin-top: 5px; color: #666;">
+                        Poor
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value negative">
+                        -63.98
+                    </div>
+                    <div class="metric-label">Z-Factor</div>
+                    <div style="font-size: 0.8em; margin-top: 5px; color: #666;">
+                        Significant
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value neutral">
+                        0.0%
+                    </div>
+                    <div class="metric-label">Kelly %</div>
+                    <div style="font-size: 0.8em; margin-top: 5px; color: #666;">
+                        Optimal Position Size
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value negative">
+                        1625.70
+                    </div>
+                    <div class="metric-label">Ulcer Index</div>
+                    <div style="font-size: 0.8em; margin-top: 5px; color: #666;">
+                        Drawdown Pain
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value negative">
+                        -28.51
+                    </div>
+                    <div class="metric-label">SQN</div>
+                    <div style="font-size: 0.8em; margin-top: 5px; color: #666;">
+                        System Quality Number
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value negative">
+                        -2.55
+                    </div>
+                    <div class="metric-label">Martin Ratio</div>
+                    <div style="font-size: 0.8em; margin-top: 5px; color: #666;">
+                        UPI Ratio
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        
+        <div class="section">
+            <h2>🎯 MAE/MFE Efficiency Analysis</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px;">
+                <div>
+                    <h3>Excursion Metrics</h3>
+                    <table>
+                        <tr><th>Metric</th><th>Value</th><th>Assessment</th></tr>
+                        <tr>
+                            <td>Average MAE</td>
+                            <td>0.02bp</td>
+                            <td><span class="badge badge-good">
+                                Low
+                            </span></td>
+                        </tr>
+                        <tr>
+                            <td>Average MFE</td>
+                            <td>0.03bp</td>
+                            <td><span class="badge badge-warning">
+                                Moderate
+                            </span></td>
+                        </tr>
+                        <tr>
+                            <td>MAE Efficiency</td>
+                            <td>1.70</td>
+                            <td><span class="badge badge-warning">
+                                Fair
+                            </span></td>
+                        </tr>
+                        <tr>
+                            <td>MFE Realization</td>
+                            <td>-40253.2%</td>
+                            <td><span class="badge badge-poor">
+                                Poor
+                            </span></td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div>
+                    <h3>Trade Quality Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="maeChart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 25px;">
+                <h3>💡 MAE/MFE Insights</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 15px;">
+                    
+                    
+                    
+                    <div class='recommendation'><span class='recommendation-icon'>📈</span><strong>Improve Exits:</strong> Only -40253.2% MFE realization suggests leaving profits on the table.</div>
+                </div>
+            </div>
+        </div>
+        
+        
+        <div class="section">
+            <h2>⚠️ Risk Analysis</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px;">
+                <div>
+                    <h3>Drawdown Metrics</h3>
+                    <div style="margin: 15px 0;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span>Max Drawdown</span>
+                            <span><strong>26677.4%</strong></span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                    
+                    <table>
+                        <tr><th>Risk Metric</th><th>Value</th><th>Rating</th></tr>
+                        <tr>
+                            <td>Value at Risk (95%)</td>
+                            <td>-26.22bp</td>
+                            <td><span class="badge badge-good">
+                                Low
+                            </span></td>
+                        </tr>
+                        <tr>
+                            <td>Conditional VaR</td>
+                            <td>-95.57bp</td>
+                            <td><span class="badge badge-warning">
+                                Moderate
+                            </span></td>
+                        </tr>
+                        <tr>
+                            <td>Lake Ratio</td>
+                            <td>81.4%</td>
+                            <td><span class="badge badge-poor">
+                                Poor
+                            </span></td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div>
+                    <h3>Risk-Adjusted Returns</h3>
+                    <div class="chart-container">
+                        <canvas id="riskChart" width="400" height="300"></canvas>
+                    </div>
+                    
+                    <div style="margin-top: 15px;">
+                        <h4>Risk Assessment</h4>
+                        <ul style="margin: 10px 0; padding-left: 20px;">
+                            <li><strong>Sortino Ratio:</strong> -11.24 
+                                <span class="badge badge-poor">
+                                    Poor
+                                </span>
+                            </li>
+                            <li><strong>Calmar Ratio:</strong> -0.16
+                                <span class="badge badge-poor">
+                                    Poor
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        
+        <div class="section">
+            <h2>⚡ Efficiency Analysis</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px;">
+                <div>
+                    <h3>Trading Efficiency</h3>
+                    <table>
+                        <tr><th>Efficiency Metric</th><th>Value</th><th>Grade</th></tr>
+                        <tr>
+                            <td>Trade Efficiency</td>
+                            <td>2.20</td>
+                            <td><span class="badge badge-excellent">
+                                A+
+                            </span></td>
+                        </tr>
+                        <tr>
+                            <td>Efficiency Ratio</td>
+                            <td>0.01</td>
+                            <td><span class="badge badge-poor">
+                                D
+                            </span></td>
+                        </tr>
+                        <tr>
+                            <td>K-Factor</td>
+                            <td>-48.80</td>
+                            <td><span class="badge badge-poor">
+                                Poor
+                            </span></td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div>
+                    <h3>Time Analysis</h3>
+                    <table>
+                        <tr><th>Time Metric</th><th>Value</th><th>Note</th></tr>
+                        <tr>
+                            <td>Avg Hold Time</td>
+                            <td>16.2h</td>
+                            <td>Overall average</td>
+                        </tr>
+                        <tr>
+                            <td>Win Hold Time</td>
+                            <td>14.8h</td>
+                            <td>Winning trades</td>
+                        </tr>
+                        <tr>
+                            <td>Loss Hold Time</td>
+                            <td>16.6h</td>
+                            <td>Losing trades</td>
+                        </tr>
+                        <tr>
+                            <td>Max Consecutive Wins</td>
+                            <td>293</td>
+                            <td>Best streak</td>
+                        </tr>
+                        <tr>
+                            <td>Max Consecutive Losses</td>
+                            <td>1281</td>
+                            <td>Worst streak</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        
+        <div class="section">
+            <h2>📋 Trade Analysis</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px;">
+                <div>
+                    <h3>Trade Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="tradeDistChart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3>Notable Trades</h3>
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: green;">🏆 Best Trade</h4>
+                        <p><strong>Trade ID:</strong> GBPUSD_H1_0005<br><strong>P&L:</strong> +4.13bp<br><strong>Efficiency:</strong> 5.00<br><strong>Hold Time:</strong> 5.0h</p>
+                    </div>
+                    
+                    <div>
+                        <h4 style="color: red;">📉 Worst Trade</h4>
+                        <p><strong>Trade ID:</strong> GBPUSD_M15_0005<br><strong>P&L:</strong> -133.62bp<br><strong>MAE:</strong> 0.01bp<br><strong>Hold Time:</strong> 5.0h</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 25px;">
+                <h3>Recent Trades (Last 10)</h3>
+                <table>
+                    <tr>
+                        <th>Trade ID</th>
+                        <th>Entry Time</th>
+                        <th>Direction</th>
+                        <th>P&L (bp)</th>
+                        <th>MAE</th>
+                        <th>MFE</th>
+                        <th>Efficiency</th>
+                        <th>Hold Time</th>
+                    </tr>
+                    
+            <tr>
+                <td>GBPUSD_D1_0812</td>
+                <td>03/08 16:00</td>
+                <td>LONG</td>
+                <td class="negative">-26.22</td>
+                <td>0.02</td>
+                <td>0.02</td>
+                <td>0.99</td>
+                <td>15.0h</td>
+            </tr>
+            
+            <tr>
+                <td>GBPUSD_D1_0813</td>
+                <td>03/08 18:00</td>
+                <td>SHORT</td>
+                <td class="negative">-19.22</td>
+                <td>0.02</td>
+                <td>0.02</td>
+                <td>0.99</td>
+                <td>16.0h</td>
+            </tr>
+            
+            <tr>
+                <td>GBPUSD_D1_0814</td>
+                <td>03/08 20:00</td>
+                <td>LONG</td>
+                <td class="negative">-20.97</td>
+                <td>0.02</td>
+                <td>0.02</td>
+                <td>0.99</td>
+                <td>17.0h</td>
+            </tr>
+            
+            <tr>
+                <td>GBPUSD_D1_0815</td>
+                <td>03/08 22:00</td>
+                <td>SHORT</td>
+                <td class="negative">-22.72</td>
+                <td>0.02</td>
+                <td>0.02</td>
+                <td>0.99</td>
+                <td>18.0h</td>
+            </tr>
+            
+            <tr>
+                <td>GBPUSD_D1_0816</td>
+                <td>03/09 00:00</td>
+                <td>LONG</td>
+                <td class="negative">-24.47</td>
+                <td>0.02</td>
+                <td>0.02</td>
+                <td>0.99</td>
+                <td>19.0h</td>
+            </tr>
+            
+            <tr>
+                <td>GBPUSD_D1_0817</td>
+                <td>03/09 02:00</td>
+                <td>SHORT</td>
+                <td class="negative">-26.22</td>
+                <td>0.02</td>
+                <td>0.02</td>
+                <td>0.99</td>
+                <td>20.0h</td>
+            </tr>
+            
+            <tr>
+                <td>GBPUSD_D1_0818</td>
+                <td>03/09 04:00</td>
+                <td>LONG</td>
+                <td class="negative">-19.22</td>
+                <td>0.02</td>
+                <td>0.02</td>
+                <td>0.99</td>
+                <td>21.0h</td>
+            </tr>
+            
+            <tr>
+                <td>GBPUSD_D1_0819</td>
+                <td>03/09 06:00</td>
+                <td>SHORT</td>
+                <td class="negative">-20.97</td>
+                <td>0.02</td>
+                <td>0.02</td>
+                <td>0.99</td>
+                <td>22.0h</td>
+            </tr>
+            
+            <tr>
+                <td>GBPUSD_D1_0820</td>
+                <td>03/09 08:00</td>
+                <td>LONG</td>
+                <td class="negative">-22.72</td>
+                <td>0.02</td>
+                <td>0.02</td>
+                <td>0.99</td>
+                <td>23.0h</td>
+            </tr>
+            
+            <tr>
+                <td>GBPUSD_D1_0821</td>
+                <td>03/09 10:00</td>
+                <td>SHORT</td>
+                <td class="negative">-24.47</td>
+                <td>0.02</td>
+                <td>0.02</td>
+                <td>0.99</td>
+                <td>24.0h</td>
+            </tr>
+            
+                </table>
+            </div>
+        </div>
+        
+        
+        <div class="section">
+            <h2>💡 Recommendations & Action Items</h2>
+            
+            <div class='recommendation'>
+                <span class='recommendation-icon'>🎯</span>
+                <strong>Improve Win Rate:</strong> Current win rate of 18.6% is below breakeven. Focus on better entry signals and market timing.
+            </div>
+            
+            <div class='recommendation'>
+                <span class='recommendation-icon'>💰</span>
+                <strong>Improve Profit Taking:</strong> Only -40253.2% MFE realization indicates missed profit opportunities. Review exit strategy.
+            </div>
+            
+            <div class='recommendation'>
+                <span class='recommendation-icon'>🛡️</span>
+                <strong>Enhance Risk Management:</strong> Max drawdown of 26677.4% is high. Consider tighter stop losses and position sizing.
+            </div>
+            
+        </div>
+        
+        
+        <div class="footer">
+            <p>Report generated by Advanced Performance Analytics Engine</p>
+            <p>For questions or support, contact your trading system administrator</p>
+            <p style="font-size: 0.8em; margin-top: 15px;">
+                Disclaimer: This report is for informational purposes only. Past performance does not guarantee future results.
+                Trading involves risk and may not be suitable for all investors.
+            </p>
+        </div>
+        
+    </div>
+    
+    
+        <script>
+        // MAE/MFE Scatter Chart
+        const maeCtx = document.getElementById('maeChart').getContext('2d');
+        new Chart(maeCtx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Trades (MAE vs MFE)',
+                    data: [{"{'x': 0.010000000000000009, 'y': 0.050014856967632415}"}, {"{'x': 0.010000999999999927, 'y': 0.0500248869216503}"}, {"{'x': 0.010001999999999955, 'y': 0.05003910359601571}"}, {"{'x': 0.010002999999999984, 'y': 0.050047776728282756}"}, {"{'x': 0.010004000000000013, 'y': 0.050063350224398784}"}, {"{'x': 0.010005000000000042, 'y': 0.050038442018334184}"}, {"{'x': 0.01000599999999996, 'y': 0.050051980281824004}"}, {"{'x': 0.0100070000000001, 'y': 0.050061331824966526}"}, {"{'x': 0.010008000000000017, 'y': 0.0500762269102073}"}, {"{'x': 0.010008999999999935, 'y': 0.05008422163159887}"}, {"{'x': 0.010009999999999963, 'y': 0.05006485696763252}"}, {"{'x': 0.010010999999999992, 'y': 0.05007488692165041}"}, {"{'x': 0.010012000000000021, 'y': 0.050089103596015594}"}, {"{'x': 0.01001300000000005, 'y': 0.05009777672828275}"}, {"{'x': 0.010013999999999967, 'y': 0.05011335022439889}"}, {"{'x': 0.010015000000000107, 'y': 0.05008844201833418}"}, {"{'x': 0.010016000000000025, 'y': 0.05010198028182411}"}, {"{'x': 0.010016999999999943, 'y': 0.05011133182496652}"}, {"{'x': 0.010017999999999971, 'y': 0.05012622691020718}"}, {"{'x': 0.010019, 'y': 0.05013422163159886}"}, {"{'x': 0.010020000000000029, 'y': 0.050114856967632404}"}, {"{'x': 0.010021000000000058, 'y': 0.0501248869216504}"}, {"{'x': 0.010021999999999975, 'y': 0.0501391035960157}"}, {"{'x': 0.010023000000000115, 'y': 0.050147776728282745}"}, {"{'x': 0.010024000000000033, 'y': 0.05016335022439877}"}, {"{'x': 0.01002499999999995, 'y': 0.05013844201833417}"}, {"{'x': 0.01002599999999998, 'y': 0.050151980281823993}"}, {"{'x': 0.010027000000000008, 'y': 0.050161331824966515}"}, {"{'x': 0.010028000000000037, 'y': 0.05017622691020729}"}, {"{'x': 0.010029000000000066, 'y': 0.05018422163159886}"}, {"{'x': 0.010029999999999983, 'y': 0.05016485696763251}"}, {"{'x': 0.010030999999999901, 'y': 0.0501748869216504}"}, {"{'x': 0.010032000000000041, 'y': 0.05018910359601558}"}, {"{'x': 0.010032999999999959, 'y': 0.05019777672828274}"}, {"{'x': 0.010033999999999987, 'y': 0.05021335022439888}"}, {"{'x': 0.010035000000000016, 'y': 0.05018844201833417}"}, {"{'x': 0.010036000000000045, 'y': 0.0502019802818241}"}, {"{'x': 0.010037000000000074, 'y': 0.05021133182496651}"}, {"{'x': 0.010037999999999991, 'y': 0.05022622691020717}"}, {"{'x': 0.010038999999999909, 'y': 0.05023422163159885}"}, {"{'x': 0.010040000000000049, 'y': 0.05021485696763239}"}, {"{'x': 0.010040999999999967, 'y': 0.05022488692165039}"}, {"{'x': 0.010041999999999995, 'y': 0.05023910359601569}"}, {"{'x': 0.010043000000000024, 'y': 0.050247776728282734}"}, {"{'x': 0.010044000000000053, 'y': 0.05026335022439876}"}, {"{'x': 0.010045000000000082, 'y': 0.05023844201833416}"}, {"{'x': 0.010046, 'y': 0.05025198028182398}"}, {"{'x': 0.010046999999999917, 'y': 0.050261331824966504}"}, {"{'x': 0.010048000000000057, 'y': 0.05027622691020728}"}, {"{'x': 0.010048999999999975, 'y': 0.05028422163159885}"}, {"{'x': 0.010050000000000003, 'y': 0.0502648569676325}"}, {"{'x': 0.010051000000000032, 'y': 0.050274886921650386}"}, {"{'x': 0.010052000000000061, 'y': 0.05028910359601557}"}, {"{'x': 0.01005300000000009, 'y': 0.05029777672828273}"}, {"{'x': 0.010054000000000007, 'y': 0.05031335022439887}"}, {"{'x': 0.010054999999999925, 'y': 0.050288442018334156}"}, {"{'x': 0.010056000000000065, 'y': 0.05030198028182409}"}, {"{'x': 0.010056999999999983, 'y': 0.0503113318249665}"}, {"{'x': 0.010058000000000011, 'y': 0.05032622691020716}"}, {"{'x': 0.01005900000000004, 'y': 0.05033422163159895}"}, {"{'x': 0.010059999999999958, 'y': 0.050314856967632604}"}, {"{'x': 0.010061000000000098, 'y': 0.05032488692165038}"}, {"{'x': 0.010062000000000015, 'y': 0.05033910359601568}"}, {"{'x': 0.010062999999999933, 'y': 0.05034777672828272}"}, {"{'x': 0.010063999999999962, 'y': 0.05036335022439875}"}, {"{'x': 0.01006499999999999, 'y': 0.05033844201833415}"}, {"{'x': 0.01006600000000002, 'y': 0.05035198028182397}"}, {"{'x': 0.010067000000000048, 'y': 0.05036133182496649}"}, {"{'x': 0.010067999999999966, 'y': 0.05037622691020727}"}, {"{'x': 0.010069000000000106, 'y': 0.05038422163159895}"}, {"{'x': 0.010070000000000023, 'y': 0.05036485696763249}"}, {"{'x': 0.010070999999999941, 'y': 0.050374886921650375}"}, {"{'x': 0.01007199999999997, 'y': 0.05038910359601556}"}, {"{'x': 0.010072999999999999, 'y': 0.05039777672828272}"}, {"{'x': 0.010074000000000027, 'y': 0.050413350224398856}"}, {"{'x': 0.010075000000000056, 'y': 0.050388442018334145}"}, {"{'x': 0.010075999999999974, 'y': 0.05040198028182408}"}, {"{'x': 0.010077000000000114, 'y': 0.05041133182496649}"}, {"{'x': 0.010078000000000031, 'y': 0.05042622691020715}"}, {"{'x': 0.010078999999999949, 'y': 0.05043422163159894}"}, {"{'x': 0.010079999999999978, 'y': 0.05041485696763259}"}, {"{'x': 0.010081000000000007, 'y': 0.05042488692165037}"}, {"{'x': 0.010082000000000035, 'y': 0.050439103596015666}"}, {"{'x': 0.010083000000000064, 'y': 0.05044777672828271}"}, {"{'x': 0.010083999999999982, 'y': 0.05046335022439874}"}, {"{'x': 0.0100849999999999, 'y': 0.05043844201833414}"}, {"{'x': 0.01008600000000004, 'y': 0.05045198028182396}"}, {"{'x': 0.010086999999999957, 'y': 0.05046133182496648}"}, {"{'x': 0.010087999999999986, 'y': 0.050476226910207256}"}, {"{'x': 0.010089000000000015, 'y': 0.050484221631598936}"}, {"{'x': 0.010090000000000043, 'y': 0.050464856967632477}"}, {"{'x': 0.010091000000000072, 'y': 0.050474886921650364}"}, {"{'x': 0.01009199999999999, 'y': 0.05048910359601555}"}, {"{'x': 0.010092999999999908, 'y': 0.050497776728282706}"}, {"{'x': 0.010094000000000047, 'y': 0.050513350224398845}"}, {"{'x': 0.010094999999999965, 'y': 0.050488442018334134}"}, {"{'x': 0.010095999999999994, 'y': 0.050501980281824066}"}, {"{'x': 0.010097000000000023, 'y': 0.05051133182496659}"}, {"{'x': 0.010098000000000051, 'y': 0.05052622691020714}"}, {"{'x': 0.01009900000000008, 'y': 0.05053422163159893}"}, {"{'x': 0.010000000000000009, 'y': 0.050014856967632415}"}, {"{'x': 0.010000999999999927, 'y': 0.0500248869216503}"}, {"{'x': 0.010001999999999955, 'y': 0.05003910359601571}"}, {"{'x': 0.010002999999999984, 'y': 0.050047776728282756}"}, {"{'x': 0.010004000000000013, 'y': 0.050063350224398784}"}, {"{'x': 0.010005000000000042, 'y': 0.050038442018334184}"}, {"{'x': 0.01000599999999996, 'y': 0.050051980281824004}"}, {"{'x': 0.0100070000000001, 'y': 0.050061331824966526}"}, {"{'x': 0.010008000000000017, 'y': 0.0500762269102073}"}, {"{'x': 0.010008999999999935, 'y': 0.05008422163159887}"}, {"{'x': 0.010009999999999963, 'y': 0.05006485696763252}"}, {"{'x': 0.010010999999999992, 'y': 0.05007488692165041}"}, {"{'x': 0.010012000000000021, 'y': 0.050089103596015594}"}, {"{'x': 0.01001300000000005, 'y': 0.05009777672828275}"}, {"{'x': 0.010013999999999967, 'y': 0.05011335022439889}"}, {"{'x': 0.010015000000000107, 'y': 0.05008844201833418}"}, {"{'x': 0.010016000000000025, 'y': 0.05010198028182411}"}, {"{'x': 0.010016999999999943, 'y': 0.05011133182496652}"}, {"{'x': 0.010017999999999971, 'y': 0.05012622691020718}"}, {"{'x': 0.010019, 'y': 0.05013422163159886}"}, {"{'x': 0.010020000000000029, 'y': 0.050114856967632404}"}, {"{'x': 0.010021000000000058, 'y': 0.0501248869216504}"}, {"{'x': 0.010021999999999975, 'y': 0.0501391035960157}"}, {"{'x': 0.010023000000000115, 'y': 0.050147776728282745}"}, {"{'x': 0.010024000000000033, 'y': 0.05016335022439877}"}, {"{'x': 0.01002499999999995, 'y': 0.05013844201833417}"}, {"{'x': 0.01002599999999998, 'y': 0.050151980281823993}"}, {"{'x': 0.010027000000000008, 'y': 0.050161331824966515}"}, {"{'x': 0.010028000000000037, 'y': 0.05017622691020729}"}, {"{'x': 0.010029000000000066, 'y': 0.05018422163159886}"}, {"{'x': 0.010029999999999983, 'y': 0.05016485696763251}"}, {"{'x': 0.010030999999999901, 'y': 0.0501748869216504}"}, {"{'x': 0.010032000000000041, 'y': 0.05018910359601558}"}, {"{'x': 0.010032999999999959, 'y': 0.05019777672828274}"}, {"{'x': 0.010033999999999987, 'y': 0.05021335022439888}"}, {"{'x': 0.010035000000000016, 'y': 0.05018844201833417}"}, {"{'x': 0.010036000000000045, 'y': 0.0502019802818241}"}, {"{'x': 0.010037000000000074, 'y': 0.05021133182496651}"}, {"{'x': 0.010037999999999991, 'y': 0.05022622691020717}"}, {"{'x': 0.010038999999999909, 'y': 0.05023422163159885}"}, {"{'x': 0.010040000000000049, 'y': 0.05021485696763239}"}, {"{'x': 0.010040999999999967, 'y': 0.05022488692165039}"}, {"{'x': 0.010041999999999995, 'y': 0.05023910359601569}"}, {"{'x': 0.010043000000000024, 'y': 0.050247776728282734}"}, {"{'x': 0.010044000000000053, 'y': 0.05026335022439876}"}, {"{'x': 0.010045000000000082, 'y': 0.05023844201833416}"}, {"{'x': 0.010046, 'y': 0.05025198028182398}"}, {"{'x': 0.010046999999999917, 'y': 0.050261331824966504}"}, {"{'x': 0.010048000000000057, 'y': 0.05027622691020728}"}, {"{'x': 0.010048999999999975, 'y': 0.05028422163159885}"}, {"{'x': 0.010050000000000003, 'y': 0.0502648569676325}"}, {"{'x': 0.010051000000000032, 'y': 0.050274886921650386}"}, {"{'x': 0.010052000000000061, 'y': 0.05028910359601557}"}, {"{'x': 0.01005300000000009, 'y': 0.05029777672828273}"}, {"{'x': 0.010054000000000007, 'y': 0.05031335022439887}"}, {"{'x': 0.01998613349687639, 'y': 0.020000000000000018}"}, {"{'x': 0.019980647726228096, 'y': 0.020001999999999964}"}, {"{'x': 0.019976836643718854, 'y': 0.02000399999999991}"}, {"{'x': 0.019970808144370134, 'y': 0.020005999999999968}"}, {"{'x': 0.019967539790561206, 'y': 0.020008000000000026}"}, {"{'x': 0.01999556751715703, 'y': 0.020009999999999972}"}, {"{'x': 0.019991485070297577, 'y': 0.02001199999999992}"}, {"{'x': 0.01998572793529907, 'y': 0.020013999999999976}"}, {"{'x': 0.01998218821714004, 'y': 0.020016000000000034}"}, {"{'x': 0.01997588835344133, 'y': 0.02001799999999998}"}, {"{'x': 0.02000613349687641, 'y': 0.020019999999999927}"}, {"{'x': 0.020000647726228227, 'y': 0.020021999999999984}"}, {"{'x': 0.019996836643718763, 'y': 0.020024000000000042}"}, {"{'x': 0.019990808144370265, 'y': 0.020025999999999988}"}, {"{'x': 0.019987539790561226, 'y': 0.020027999999999935}"}, {"{'x': 0.020015567517157162, 'y': 0.020029999999999992}"}, {"{'x': 0.020011485070297597, 'y': 0.02003200000000005}"}, {"{'x': 0.0200057279352992, 'y': 0.020033999999999996}"}, {"{'x': 0.02000218821713995, 'y': 0.020035999999999943}"}, {"{'x': 0.019995888353441238, 'y': 0.020038}"}, {"{'x': 0.02002613349687643, 'y': 0.020040000000000058}"}, {"{'x': 0.020020647726228136, 'y': 0.020042000000000004}"}, {"{'x': 0.020016836643718783, 'y': 0.02004399999999995}"}, {"{'x': 0.020010808144370174, 'y': 0.020046000000000008}"}, {"{'x': 0.020007539790561246, 'y': 0.020048000000000066}"}, {"{'x': 0.02003556751715707, 'y': 0.020050000000000012}"}, {"{'x': 0.020031485070297617, 'y': 0.02005199999999996}"}, {"{'x': 0.02002572793529911, 'y': 0.020054000000000016}"}, {"{'x': 0.02002218821713997, 'y': 0.020056000000000074}"}, {"{'x': 0.020015888353441147, 'y': 0.02005800000000002}"}, {"{'x': 0.02004613349687645, 'y': 0.020059999999999967}"}, {"{'x': 0.020040647726228045, 'y': 0.020062000000000024}"}, {"{'x': 0.020036836643718803, 'y': 0.020064000000000082}"}, {"{'x': 0.020030808144370305, 'y': 0.020066000000000028}"}, {"{'x': 0.020027539790561155, 'y': 0.020067999999999975}"}, {"{'x': 0.02005556751715698, 'y': 0.020070000000000032}"}, {"{'x': 0.020051485070297637, 'y': 0.02007200000000009}"}, {"{'x': 0.02004572793529924, 'y': 0.020074000000000036}"}, {"{'x': 0.02004218821713999, 'y': 0.020075999999999983}"}, {"{'x': 0.020035888353441278, 'y': 0.02007800000000004}"}, {"{'x': 0.02006613349687636, 'y': 0.020080000000000098}"}, {"{'x': 0.020060647726228176, 'y': 0.020082000000000044}"}, {"{'x': 0.020056836643718823, 'y': 0.02008399999999999}"}, {"{'x': 0.020050808144370214, 'y': 0.020086000000000048}"}, {"{'x': 0.020047539790561175, 'y': 0.020088000000000106}"}, {"{'x': 0.02007556751715711, 'y': 0.020090000000000052}"}, {"{'x': 0.020071485070297546, 'y': 0.020092}"}, {"{'x': 0.02006572793529915, 'y': 0.020094000000000056}"}, {"{'x': 0.02006218821714001, 'y': 0.020096000000000114}"}, {"{'x': 0.020055888353441187, 'y': 0.02009800000000006}"}, {"{'x': 0.02008613349687638, 'y': 0.020100000000000007}"}, {"{'x': 0.020080647726228085, 'y': 0.020102000000000064}"}, {"{'x': 0.020076836643718843, 'y': 0.020104000000000122}"}, {"{'x': 0.020070808144370123, 'y': 0.020106000000000068}"}, {"{'x': 0.020067539790561195, 'y': 0.020108000000000015}"}, {"{'x': 0.02009556751715702, 'y': 0.020110000000000072}"}, {"{'x': 0.020091485070297566, 'y': 0.02011200000000013}"}, {"{'x': 0.020085727935299058, 'y': 0.020113999999999965}"}, {"{'x': 0.02008218821714003, 'y': 0.020116000000000023}"}, {"{'x': 0.020075888353441318, 'y': 0.02011799999999997}"}, {"{'x': 0.0201061334968764, 'y': 0.020119999999999916}"}, {"{'x': 0.020100647726228216, 'y': 0.020121999999999973}"}, {"{'x': 0.020096836643718752, 'y': 0.02012400000000003}"}, {"{'x': 0.020090808144370254, 'y': 0.020125999999999977}"}, {"{'x': 0.020087539790561215, 'y': 0.020127999999999924}"}, {"{'x': 0.02011556751715715, 'y': 0.02012999999999998}"}, {"{'x': 0.020111485070297586, 'y': 0.02013200000000004}"}, {"{'x': 0.02010572793529919, 'y': 0.020133999999999985}"}, {"{'x': 0.02010218821714005, 'y': 0.02013599999999993}"}, {"{'x': 0.020095888353441227, 'y': 0.02013799999999999}"}, {"{'x': 0.02012613349687642, 'y': 0.020140000000000047}"}, {"{'x': 0.020120647726228125, 'y': 0.020141999999999993}"}, {"{'x': 0.020116836643718772, 'y': 0.02014399999999994}"}, {"{'x': 0.020110808144370163, 'y': 0.020145999999999997}"}, {"{'x': 0.020107539790561235, 'y': 0.020148000000000055}"}, {"{'x': 0.02013556751715706, 'y': 0.02015}"}, {"{'x': 0.020131485070297606, 'y': 0.020151999999999948}"}, {"{'x': 0.020125727935299098, 'y': 0.020154000000000005}"}, {"{'x': 0.020122188217139958, 'y': 0.020156000000000063}"}, {"{'x': 0.020115888353441358, 'y': 0.02015800000000001}"}, {"{'x': 0.02014613349687644, 'y': 0.020159999999999956}"}, {"{'x': 0.020140647726228034, 'y': 0.020162000000000013}"}, {"{'x': 0.020136836643718792, 'y': 0.02016400000000007}"}, {"{'x': 0.020130808144370294, 'y': 0.020166000000000017}"}, {"{'x': 0.020127539790561255, 'y': 0.020167999999999964}"}, {"{'x': 0.02015556751715697, 'y': 0.02017000000000002}"}, {"{'x': 0.020151485070297626, 'y': 0.02017200000000008}"}, {"{'x': 0.02014572793529923, 'y': 0.020174000000000025}"}, {"{'x': 0.020142188217139978, 'y': 0.02017599999999997}"}, {"{'x': 0.020135888353441267, 'y': 0.02017800000000003}"}, {"{'x': 0.02016613349687635, 'y': 0.020180000000000087}"}, {"{'x': 0.020160647726228165, 'y': 0.020182000000000033}"}, {"{'x': 0.020156836643718812, 'y': 0.02018399999999998}"}, {"{'x': 0.020150808144370203, 'y': 0.020186000000000037}"}, {"{'x': 0.020147539790561164, 'y': 0.020188000000000095}"}, {"{'x': 0.0201755675171571, 'y': 0.02019000000000004}"}, {"{'x': 0.020171485070297646, 'y': 0.020191999999999988}"}, {"{'x': 0.020165727935299138, 'y': 0.020194000000000045}"}, {"{'x': 0.020162188217139998, 'y': 0.020196000000000103}"}, {"{'x': 0.020155888353441176, 'y': 0.02019800000000005}"}, {"{'x': 0.01998613349687639, 'y': 0.020000000000000018}"}, {"{'x': 0.019980647726228096, 'y': 0.020001999999999964}"}, {"{'x': 0.019976836643718854, 'y': 0.02000399999999991}"}, {"{'x': 0.019970808144370134, 'y': 0.020005999999999968}"}, {"{'x': 0.019967539790561206, 'y': 0.020008000000000026}"}, {"{'x': 0.01999556751715703, 'y': 0.020009999999999972}"}, {"{'x': 0.019991485070297577, 'y': 0.02001199999999992}"}, {"{'x': 0.01998572793529907, 'y': 0.020013999999999976}"}, {"{'x': 0.01998218821714004, 'y': 0.020016000000000034}"}, {"{'x': 0.01997588835344133, 'y': 0.02001799999999998}"}, {"{'x': 0.02000613349687641, 'y': 0.020019999999999927}"}, {"{'x': 0.020000647726228227, 'y': 0.020021999999999984}"}, {"{'x': 0.019996836643718763, 'y': 0.020024000000000042}"}, {"{'x': 0.019990808144370265, 'y': 0.020025999999999988}"}, {"{'x': 0.019987539790561226, 'y': 0.020027999999999935}"}, {"{'x': 0.020015567517157162, 'y': 0.020029999999999992}"}, {"{'x': 0.020011485070297597, 'y': 0.02003200000000005}"}, {"{'x': 0.0200057279352992, 'y': 0.020033999999999996}"}, {"{'x': 0.02000218821713995, 'y': 0.020035999999999943}"}, {"{'x': 0.019995888353441238, 'y': 0.020038}"}, {"{'x': 0.02002613349687643, 'y': 0.020040000000000058}"}, {"{'x': 0.020020647726228136, 'y': 0.020042000000000004}"}, {"{'x': 0.020016836643718783, 'y': 0.02004399999999995}"}, {"{'x': 0.020010808144370174, 'y': 0.020046000000000008}"}, {"{'x': 0.020007539790561246, 'y': 0.020048000000000066}"}, {"{'x': 0.02003556751715707, 'y': 0.020050000000000012}"}, {"{'x': 0.020031485070297617, 'y': 0.02005199999999996}"}, {"{'x': 0.02002572793529911, 'y': 0.020054000000000016}"}, {"{'x': 0.02002218821713997, 'y': 0.020056000000000074}"}, {"{'x': 0.020015888353441147, 'y': 0.02005800000000002}"}, {"{'x': 0.02004613349687645, 'y': 0.020059999999999967}"}, {"{'x': 0.020040647726228045, 'y': 0.020062000000000024}"}, {"{'x': 0.020036836643718803, 'y': 0.020064000000000082}"}, {"{'x': 0.020030808144370305, 'y': 0.020066000000000028}"}, {"{'x': 0.020027539790561155, 'y': 0.020067999999999975}"}, {"{'x': 0.02005556751715698, 'y': 0.020070000000000032}"}, {"{'x': 0.020051485070297637, 'y': 0.02007200000000009}"}, {"{'x': 0.02004572793529924, 'y': 0.020074000000000036}"}, {"{'x': 0.010000000000000009, 'y': 0.049972710006426446}"}, {"{'x': 0.010000999999999927, 'y': 0.049982137659000614}"}, {"{'x': 0.010001999999999955, 'y': 0.049986752187153316}"}, {"{'x': 0.010002999999999984, 'y': 0.04999579487013439}"}, {"{'x': 0.010004000000000013, 'y': 0.05000079436788041}"}, {"{'x': 0.010005000000000042, 'y': 0.05000030905343367}"}, {"{'x': 0.01000599999999996, 'y': 0.050004731096790156}"}, {"{'x': 0.0100070000000001, 'y': 0.05001396626456733}"}, {"{'x': 0.010008000000000017, 'y': 0.050018773277517026}"}, {"{'x': 0.010008999999999935, 'y': 0.05002762347570133}"}, {"{'x': 0.010009999999999963, 'y': 0.05002271000642655}"}, {"{'x': 0.010010999999999992, 'y': 0.05003213765900061}"}, {"{'x': 0.010012000000000021, 'y': 0.05003675218715342}"}, {"{'x': 0.01001300000000005, 'y': 0.050045794870134386}"}, {"{'x': 0.010013999999999967, 'y': 0.05005079436788051}"}, {"{'x': 0.010015000000000107, 'y': 0.05005030905343366}"}, {"{'x': 0.010016000000000025, 'y': 0.05005473109679026}"}, {"{'x': 0.010016999999999943, 'y': 0.05006396626456744}"}, {"{'x': 0.010017999999999971, 'y': 0.05006877327751691}"}, {"{'x': 0.010019, 'y': 0.05007762347570133}"}, {"{'x': 0.010020000000000029, 'y': 0.05007271000642666}"}, {"{'x': 0.010021000000000058, 'y': 0.0500821376590006}"}, {"{'x': 0.010021999999999975, 'y': 0.05008675218715353}"}, {"{'x': 0.010023000000000115, 'y': 0.05009579487013438}"}, {"{'x': 0.010024000000000033, 'y': 0.0501007943678804}"}, {"{'x': 0.01002499999999995, 'y': 0.050100309053433656}"}, {"{'x': 0.01002599999999998, 'y': 0.050104731096790145}"}, {"{'x': 0.010027000000000008, 'y': 0.05011396626456743}"}, {"{'x': 0.010028000000000037, 'y': 0.050118773277517015}"}, {"{'x': 0.010029000000000066, 'y': 0.05012762347570132}"}, {"{'x': 0.010029999999999983, 'y': 0.05012271000642654}"}, {"{'x': 0.010030999999999901, 'y': 0.0501321376590006}"}, {"{'x': 0.010032000000000041, 'y': 0.05013675218715341}"}, {"{'x': 0.010032999999999959, 'y': 0.050145794870134375}"}, {"{'x': 0.010033999999999987, 'y': 0.0501507943678805}"}, {"{'x': 0.010035000000000016, 'y': 0.05015030905343365}"}, {"{'x': 0.010036000000000045, 'y': 0.05015473109679025}"}, {"{'x': 0.010037000000000074, 'y': 0.05016396626456743}"}, {"{'x': 0.010037999999999991, 'y': 0.0501687732775169}"}, {"{'x': 0.010038999999999909, 'y': 0.050177623475701316}"}, {"{'x': 0.010040000000000049, 'y': 0.050172710006426646}"}, {"{'x': 0.010040999999999967, 'y': 0.05018213765900059}"}, {"{'x': 0.010041999999999995, 'y': 0.050186752187153516}"}, {"{'x': 0.010043000000000024, 'y': 0.05019579487013437}"}, {"{'x': 0.010044000000000053, 'y': 0.050200794367880386}"}, {"{'x': 0.010045000000000082, 'y': 0.050200309053433645}"}, {"{'x': 0.010046, 'y': 0.050204731096790134}"}, {"{'x': 0.010046999999999917, 'y': 0.05021396626456742}"}, {"{'x': 0.010048000000000057, 'y': 0.050218773277517004}"}, {"{'x': 0.010048999999999975, 'y': 0.05022762347570131}"}, {"{'x': 0.010050000000000003, 'y': 0.05022271000642675}"}, {"{'x': 0.010051000000000032, 'y': 0.050232137659000586}"}, {"{'x': 0.010052000000000061, 'y': 0.0502367521871534}"}, {"{'x': 0.01005300000000009, 'y': 0.050245794870134364}"}, {"{'x': 0.010054000000000007, 'y': 0.05025079436788049}"}, {"{'x': 0.010054999999999925, 'y': 0.05025030905343364}"}, {"{'x': 0.010056000000000065, 'y': 0.05025473109679024}"}, {"{'x': 0.010056999999999983, 'y': 0.05026396626456742}"}, {"{'x': 0.010058000000000011, 'y': 0.05026877327751689}"}, {"{'x': 0.01005900000000004, 'y': 0.050277623475701305}"}, {"{'x': 0.010059999999999958, 'y': 0.050272710006426635}"}, {"{'x': 0.010061000000000098, 'y': 0.05028213765900058}"}, {"{'x': 0.010062000000000015, 'y': 0.050286752187153505}"}, {"{'x': 0.010062999999999933, 'y': 0.05029579487013436}"}, {"{'x': 0.010063999999999962, 'y': 0.050300794367880375}"}, {"{'x': 0.01006499999999999, 'y': 0.050300309053433634}"}, {"{'x': 0.01006600000000002, 'y': 0.05030473109679012}"}, {"{'x': 0.010067000000000048, 'y': 0.05031396626456741}"}, {"{'x': 0.010067999999999966, 'y': 0.05031877327751699}"}, {"{'x': 0.010069000000000106, 'y': 0.0503276234757013}"}, {"{'x': 0.010070000000000023, 'y': 0.05032271000642674}"}, {"{'x': 0.010070999999999941, 'y': 0.050332137659000575}"}, {"{'x': 0.01007199999999997, 'y': 0.05033675218715339}"}, {"{'x': 0.010072999999999999, 'y': 0.05034579487013435}"}, {"{'x': 0.010074000000000027, 'y': 0.05035079436788048}"}, {"{'x': 0.010075000000000056, 'y': 0.05035030905343363}"}, {"{'x': 0.010075999999999974, 'y': 0.05035473109679023}"}, {"{'x': 0.010077000000000114, 'y': 0.050363966264567406}"}, {"{'x': 0.010078000000000031, 'y': 0.050368773277516876}"}, {"{'x': 0.010078999999999949, 'y': 0.050377623475701294}"}, {"{'x': 0.010079999999999978, 'y': 0.050372710006426624}"}, {"{'x': 0.010081000000000007, 'y': 0.05038213765900057}"}, {"{'x': 0.010082000000000035, 'y': 0.050386752187153494}"}, {"{'x': 0.010083000000000064, 'y': 0.05039579487013435}"}, {"{'x': 0.010083999999999982, 'y': 0.050400794367880364}"}, {"{'x': 0.0100849999999999, 'y': 0.05040030905343362}"}, {"{'x': 0.01008600000000004, 'y': 0.05040473109679011}"}, {"{'x': 0.010086999999999957, 'y': 0.0504139662645674}"}, {"{'x': 0.010087999999999986, 'y': 0.05041877327751698}"}, {"{'x': 0.010089000000000015, 'y': 0.05042762347570129}"}, {"{'x': 0.010090000000000043, 'y': 0.05042271000642673}"}, {"{'x': 0.010091000000000072, 'y': 0.050432137659000675}"}, {"{'x': 0.01009199999999999, 'y': 0.05043675218715338}"}, {"{'x': 0.010092999999999908, 'y': 0.05044579487013434}"}, {"{'x': 0.010094000000000047, 'y': 0.05045079436788047}"}, {"{'x': 0.010094999999999965, 'y': 0.05045030905343362}"}, {"{'x': 0.010095999999999994, 'y': 0.05045473109679022}"}, {"{'x': 0.010097000000000023, 'y': 0.050463966264567395}"}, {"{'x': 0.010098000000000051, 'y': 0.050468773277516865}"}, {"{'x': 0.01009900000000008, 'y': 0.050477623475701394}"}, {"{'x': 0.010000000000000009, 'y': 0.049972710006426446}"}, {"{'x': 0.010000999999999927, 'y': 0.049982137659000614}"}, {"{'x': 0.010001999999999955, 'y': 0.049986752187153316}"}, {"{'x': 0.010002999999999984, 'y': 0.04999579487013439}"}, {"{'x': 0.010004000000000013, 'y': 0.05000079436788041}"}, {"{'x': 0.010005000000000042, 'y': 0.05000030905343367}"}, {"{'x': 0.01000599999999996, 'y': 0.050004731096790156}"}, {"{'x': 0.0100070000000001, 'y': 0.05001396626456733}"}, {"{'x': 0.010008000000000017, 'y': 0.050018773277517026}"}, {"{'x': 0.010008999999999935, 'y': 0.05002762347570133}"}, {"{'x': 0.010009999999999963, 'y': 0.05002271000642655}"}, {"{'x': 0.010010999999999992, 'y': 0.05003213765900061}"}, {"{'x': 0.010012000000000021, 'y': 0.05003675218715342}"}, {"{'x': 0.01001300000000005, 'y': 0.050045794870134386}"}, {"{'x': 0.010013999999999967, 'y': 0.05005079436788051}"}, {"{'x': 0.010015000000000107, 'y': 0.05005030905343366}"}, {"{'x': 0.010016000000000025, 'y': 0.05005473109679026}"}, {"{'x': 0.010016999999999943, 'y': 0.05006396626456744}"}, {"{'x': 0.010017999999999971, 'y': 0.05006877327751691}"}, {"{'x': 0.010019, 'y': 0.05007762347570133}"}, {"{'x': 0.010020000000000029, 'y': 0.05007271000642666}"}, {"{'x': 0.010021000000000058, 'y': 0.0500821376590006}"}, {"{'x': 0.010021999999999975, 'y': 0.05008675218715353}"}, {"{'x': 0.010023000000000115, 'y': 0.05009579487013438}"}, {"{'x': 0.010024000000000033, 'y': 0.0501007943678804}"}, {"{'x': 0.01002499999999995, 'y': 0.050100309053433656}"}, {"{'x': 0.01002599999999998, 'y': 0.050104731096790145}"}, {"{'x': 0.010027000000000008, 'y': 0.05011396626456743}"}, {"{'x': 0.010028000000000037, 'y': 0.050118773277517015}"}, {"{'x': 0.010029000000000066, 'y': 0.05012762347570132}"}, {"{'x': 0.010029999999999983, 'y': 0.05012271000642654}"}, {"{'x': 0.010030999999999901, 'y': 0.0501321376590006}"}, {"{'x': 0.010032000000000041, 'y': 0.05013675218715341}"}, {"{'x': 0.010032999999999959, 'y': 0.050145794870134375}"}, {"{'x': 0.010033999999999987, 'y': 0.0501507943678805}"}, {"{'x': 0.010035000000000016, 'y': 0.05015030905343365}"}, {"{'x': 0.010036000000000045, 'y': 0.05015473109679025}"}, {"{'x': 0.010037000000000074, 'y': 0.05016396626456743}"}, {"{'x': 0.010037999999999991, 'y': 0.0501687732775169}"}, {"{'x': 0.010038999999999909, 'y': 0.050177623475701316}"}, {"{'x': 0.010040000000000049, 'y': 0.050172710006426646}"}, {"{'x': 0.010040999999999967, 'y': 0.05018213765900059}"}, {"{'x': 0.010041999999999995, 'y': 0.050186752187153516}"}, {"{'x': 0.010043000000000024, 'y': 0.05019579487013437}"}, {"{'x': 0.010044000000000053, 'y': 0.050200794367880386}"}, {"{'x': 0.010045000000000082, 'y': 0.050200309053433645}"}, {"{'x': 0.010046, 'y': 0.050204731096790134}"}, {"{'x': 0.010046999999999917, 'y': 0.05021396626456742}"}, {"{'x': 0.010048000000000057, 'y': 0.050218773277517004}"}, {"{'x': 0.010048999999999975, 'y': 0.05022762347570131}"}, {"{'x': 0.010050000000000003, 'y': 0.05022271000642675}"}, {"{'x': 0.010051000000000032, 'y': 0.050232137659000586}"}, {"{'x': 0.010052000000000061, 'y': 0.0502367521871534}"}, {"{'x': 0.01005300000000009, 'y': 0.050245794870134364}"}, {"{'x': 0.010054000000000007, 'y': 0.05025079436788049}"}, {"{'x': 0.010054999999999925, 'y': 0.05025030905343364}"}, {"{'x': 0.010056000000000065, 'y': 0.05025473109679024}"}, {"{'x': 0.010056999999999983, 'y': 0.05026396626456742}"}, {"{'x': 0.010058000000000011, 'y': 0.05026877327751689}"}, {"{'x': 0.01005900000000004, 'y': 0.050277623475701305}"}, {"{'x': 0.010059999999999958, 'y': 0.050272710006426635}"}, {"{'x': 0.010061000000000098, 'y': 0.05028213765900058}"}, {"{'x': 0.010062000000000015, 'y': 0.050286752187153505}"}, {"{'x': 0.010062999999999933, 'y': 0.05029579487013436}"}, {"{'x': 0.010063999999999962, 'y': 0.050300794367880375}"}, {"{'x': 0.01006499999999999, 'y': 0.050300309053433634}"}, {"{'x': 0.01006600000000002, 'y': 0.05030473109679012}"}, {"{'x': 0.010067000000000048, 'y': 0.05031396626456741}"}, {"{'x': 0.010067999999999966, 'y': 0.05031877327751699}"}, {"{'x': 0.010069000000000106, 'y': 0.0503276234757013}"}, {"{'x': 0.010070000000000023, 'y': 0.05032271000642674}"}, {"{'x': 0.010070999999999941, 'y': 0.050332137659000575}"}, {"{'x': 0.01007199999999997, 'y': 0.05033675218715339}"}, {"{'x': 0.010072999999999999, 'y': 0.05034579487013435}"}, {"{'x': 0.010074000000000027, 'y': 0.05035079436788048}"}, {"{'x': 0.010075000000000056, 'y': 0.05035030905343363}"}, {"{'x': 0.010075999999999974, 'y': 0.05035473109679023}"}, {"{'x': 0.010077000000000114, 'y': 0.050363966264567406}"}, {"{'x': 0.010078000000000031, 'y': 0.050368773277516876}"}, {"{'x': 0.010078999999999949, 'y': 0.050377623475701294}"}, {"{'x': 0.010079999999999978, 'y': 0.050372710006426624}"}, {"{'x': 0.010081000000000007, 'y': 0.05038213765900057}"}, {"{'x': 0.010082000000000035, 'y': 0.050386752187153494}"}, {"{'x': 0.010083000000000064, 'y': 0.05039579487013435}"}, {"{'x': 0.010083999999999982, 'y': 0.050400794367880364}"}, {"{'x': 0.0100849999999999, 'y': 0.05040030905343362}"}, {"{'x': 0.01008600000000004, 'y': 0.05040473109679011}"}, {"{'x': 0.010086999999999957, 'y': 0.0504139662645674}"}, {"{'x': 0.010087999999999986, 'y': 0.05041877327751698}"}, {"{'x': 0.010089000000000015, 'y': 0.05042762347570129}"}, {"{'x': 0.010090000000000043, 'y': 0.05042271000642673}"}, {"{'x': 0.010091000000000072, 'y': 0.050432137659000675}"}, {"{'x': 0.01009199999999999, 'y': 0.05043675218715338}"}, {"{'x': 0.010092999999999908, 'y': 0.05044579487013434}"}, {"{'x': 0.010094000000000047, 'y': 0.05045079436788047}"}, {"{'x': 0.010094999999999965, 'y': 0.05045030905343362}"}, {"{'x': 0.010095999999999994, 'y': 0.05045473109679022}"}, {"{'x': 0.010097000000000023, 'y': 0.050463966264567395}"}, {"{'x': 0.010098000000000051, 'y': 0.050468773277516865}"}, {"{'x': 0.01009900000000008, 'y': 0.050477623475701394}"}, {"{'x': 0.010000000000000009, 'y': 0.049972710006426446}"}, {"{'x': 0.010000999999999927, 'y': 0.049982137659000614}"}, {"{'x': 0.010001999999999955, 'y': 0.049986752187153316}"}, {"{'x': 0.010002999999999984, 'y': 0.04999579487013439}"}, {"{'x': 0.010004000000000013, 'y': 0.05000079436788041}"}, {"{'x': 0.010005000000000042, 'y': 0.05000030905343367}"}, {"{'x': 0.01000599999999996, 'y': 0.050004731096790156}"}, {"{'x': 0.0100070000000001, 'y': 0.05001396626456733}"}, {"{'x': 0.02002547066066862, 'y': 0.020000000000000018}"}, {"{'x': 0.020026546934546863, 'y': 0.020001999999999964}"}, {"{'x': 0.02002569795865683, 'y': 0.02000399999999991}"}, {"{'x': 0.020026620244697924, 'y': 0.020005999999999968}"}, {"{'x': 0.02002592525664504, 'y': 0.020008000000000026}"}, {"{'x': 0.020036510279471287, 'y': 0.020009999999999972}"}, {"{'x': 0.02003558430966257, 'y': 0.02001199999999992}"}, {"{'x': 0.020036583589622348, 'y': 0.020013999999999976}"}, {"{'x': 0.02003581160765089, 'y': 0.020016000000000034}"}, {"{'x': 0.02003665689977341, 'y': 0.02001799999999998}"}, {"{'x': 0.02004547066066853, 'y': 0.020019999999999927}"}, {"{'x': 0.02004654693454677, 'y': 0.020021999999999984}"}, {"{'x': 0.02004569795865685, 'y': 0.020024000000000042}"}, {"{'x': 0.020046620244697833, 'y': 0.020025999999999988}"}, {"{'x': 0.020045925256644948, 'y': 0.020027999999999935}"}, {"{'x': 0.020056510279471418, 'y': 0.020029999999999992}"}, {"{'x': 0.02005558430966259, 'y': 0.02003200000000005}"}, {"{'x': 0.02005658358962248, 'y': 0.020033999999999996}"}, {"{'x': 0.02005581160765091, 'y': 0.020035999999999943}"}, {"{'x': 0.020056656899773317, 'y': 0.020038}"}, {"{'x': 0.02006547066066855, 'y': 0.020040000000000058}"}, {"{'x': 0.02006654693454668, 'y': 0.020042000000000004}"}, {"{'x': 0.02006569795865687, 'y': 0.02004399999999995}"}, {"{'x': 0.020066620244697964, 'y': 0.020046000000000008}"}, {"{'x': 0.020065925256644968, 'y': 0.020048000000000066}"}, {"{'x': 0.020076510279471327, 'y': 0.020050000000000012}"}, {"{'x': 0.02007558430966261, 'y': 0.02005199999999996}"}, {"{'x': 0.020076583589622388, 'y': 0.020054000000000016}"}, {"{'x': 0.02007581160765093, 'y': 0.020056000000000074}"}, {"{'x': 0.02007665689977345, 'y': 0.02005800000000002}"}, {"{'x': 0.02008547066066857, 'y': 0.020059999999999967}"}, {"{'x': 0.02008654693454681, 'y': 0.020062000000000024}"}, {"{'x': 0.02008569795865689, 'y': 0.020064000000000082}"}, {"{'x': 0.020086620244697873, 'y': 0.020066000000000028}"}, {"{'x': 0.020085925256644988, 'y': 0.020067999999999975}"}, {"{'x': 0.020096510279471236, 'y': 0.020070000000000032}"}, {"{'x': 0.02009558430966263, 'y': 0.02007200000000009}"}, {"{'x': 0.02009658358962252, 'y': 0.020074000000000036}"}, {"{'x': 0.02009581160765095, 'y': 0.020075999999999983}"}, {"{'x': 0.020096656899773357, 'y': 0.02007800000000004}"}, {"{'x': 0.02010547066066848, 'y': 0.020080000000000098}"}, {"{'x': 0.02010654693454672, 'y': 0.020082000000000044}"}, {"{'x': 0.02010569795865691, 'y': 0.02008399999999999}"}, {"{'x': 0.020106620244698004, 'y': 0.020086000000000048}"}, {"{'x': 0.020105925256645008, 'y': 0.020088000000000106}"}, {"{'x': 0.020116510279471367, 'y': 0.020090000000000052}"}, {"{'x': 0.020115584309662538, 'y': 0.020092}"}, {"{'x': 0.020116583589622428, 'y': 0.020094000000000056}"}, {"{'x': 0.02011581160765097, 'y': 0.020096000000000114}"}, {"{'x': 0.020116656899773266, 'y': 0.02009800000000006}"}, {"{'x': 0.0201254706606685, 'y': 0.020100000000000007}"}, {"{'x': 0.02012654693454685, 'y': 0.020102000000000064}"}, {"{'x': 0.02012569795865682, 'y': 0.020104000000000122}"}, {"{'x': 0.020126620244697913, 'y': 0.020106000000000068}"}, {"{'x': 0.020125925256645028, 'y': 0.020108000000000015}"}, {"{'x': 0.020136510279471276, 'y': 0.020110000000000072}"}, {"{'x': 0.020135584309662558, 'y': 0.02011200000000013}"}, {"{'x': 0.02013658358962256, 'y': 0.020113999999999965}"}, {"{'x': 0.02013581160765099, 'y': 0.020116000000000023}"}, {"{'x': 0.020136656899773397, 'y': 0.02011799999999997}"}, {"{'x': 0.02014547066066852, 'y': 0.020119999999999916}"}, {"{'x': 0.02014654693454676, 'y': 0.020121999999999973}"}, {"{'x': 0.02014569795865684, 'y': 0.02012400000000003}"}, {"{'x': 0.02014662024469782, 'y': 0.020125999999999977}"}, {"{'x': 0.020145925256645048, 'y': 0.020127999999999924}"}, {"{'x': 0.020156510279471407, 'y': 0.02012999999999998}"}, {"{'x': 0.020155584309662578, 'y': 0.02013200000000004}"}, {"{'x': 0.020156583589622468, 'y': 0.020133999999999985}"}, {"{'x': 0.020155811607650898, 'y': 0.02013599999999993}"}, {"{'x': 0.020156656899773306, 'y': 0.02013799999999999}"}, {"{'x': 0.02016547066066854, 'y': 0.020140000000000047}"}, {"{'x': 0.02016654693454667, 'y': 0.020141999999999993}"}, {"{'x': 0.02016569795865686, 'y': 0.02014399999999994}"}, {"{'x': 0.020166620244697953, 'y': 0.020145999999999997}"}, {"{'x': 0.020165925256644956, 'y': 0.020148000000000055}"}, {"{'x': 0.020176510279471316, 'y': 0.02015}"}, {"{'x': 0.020175584309662598, 'y': 0.020151999999999948}"}, {"{'x': 0.020176583589622377, 'y': 0.020154000000000005}"}, {"{'x': 0.020175811607650918, 'y': 0.020156000000000063}"}, {"{'x': 0.020176656899773437, 'y': 0.02015800000000001}"}, {"{'x': 0.02018547066066856, 'y': 0.020159999999999956}"}, {"{'x': 0.0201865469345468, 'y': 0.020162000000000013}"}, {"{'x': 0.02018569795865688, 'y': 0.02016400000000007}"}, {"{'x': 0.02018662024469786, 'y': 0.020166000000000017}"}, {"{'x': 0.020185925256644976, 'y': 0.020167999999999964}"}, {"{'x': 0.020196510279471225, 'y': 0.02017000000000002}"}, {"{'x': 0.020195584309662618, 'y': 0.02017200000000008}"}, {"{'x': 0.020196583589622508, 'y': 0.020174000000000025}"}, {"{'x': 0.020195811607650938, 'y': 0.02017599999999997}"}, {"{'x': 0.020196656899773346, 'y': 0.02017800000000003}"}, {"{'x': 0.020205470660668468, 'y': 0.020180000000000087}"}, {"{'x': 0.02020654693454671, 'y': 0.020182000000000033}"}, {"{'x': 0.0202056979586569, 'y': 0.02018399999999998}"}, {"{'x': 0.020206620244697993, 'y': 0.020186000000000037}"}, {"{'x': 0.020205925256644997, 'y': 0.020188000000000095}"}, {"{'x': 0.020216510279471356, 'y': 0.02019000000000004}"}, {"{'x': 0.020215584309662638, 'y': 0.020191999999999988}"}, {"{'x': 0.020216583589622417, 'y': 0.020194000000000045}"}, {"{'x': 0.020215811607650958, 'y': 0.020196000000000103}"}, {"{'x': 0.020216656899773477, 'y': 0.02019800000000005}"}, {"{'x': 0.02002547066066862, 'y': 0.020000000000000018}"}, {"{'x': 0.020026546934546863, 'y': 0.020001999999999964}"}, {"{'x': 0.02002569795865683, 'y': 0.02000399999999991}"}, {"{'x': 0.020026620244697924, 'y': 0.020005999999999968}"}, {"{'x': 0.02002592525664504, 'y': 0.020008000000000026}"}, {"{'x': 0.020036510279471287, 'y': 0.020009999999999972}"}, {"{'x': 0.02003558430966257, 'y': 0.02001199999999992}"}, {"{'x': 0.020036583589622348, 'y': 0.020013999999999976}"}, {"{'x': 0.02003581160765089, 'y': 0.020016000000000034}"}, {"{'x': 0.02003665689977341, 'y': 0.02001799999999998}"}, {"{'x': 0.02004547066066853, 'y': 0.020019999999999927}"}, {"{'x': 0.02004654693454677, 'y': 0.020021999999999984}"}, {"{'x': 0.02004569795865685, 'y': 0.020024000000000042}"}, {"{'x': 0.020046620244697833, 'y': 0.020025999999999988}"}, {"{'x': 0.020045925256644948, 'y': 0.020027999999999935}"}, {"{'x': 0.020056510279471418, 'y': 0.020029999999999992}"}, {"{'x': 0.02005558430966259, 'y': 0.02003200000000005}"}, {"{'x': 0.02005658358962248, 'y': 0.020033999999999996}"}, {"{'x': 0.02005581160765091, 'y': 0.020035999999999943}"}, {"{'x': 0.020056656899773317, 'y': 0.020038}"}, {"{'x': 0.02006547066066855, 'y': 0.020040000000000058}"}, {"{'x': 0.02006654693454668, 'y': 0.020042000000000004}"}, {"{'x': 0.02006569795865687, 'y': 0.02004399999999995}"}, {"{'x': 0.020066620244697964, 'y': 0.020046000000000008}"}, {"{'x': 0.020065925256644968, 'y': 0.020048000000000066}"}, {"{'x': 0.020076510279471327, 'y': 0.020050000000000012}"}, {"{'x': 0.02007558430966261, 'y': 0.02005199999999996}"}, {"{'x': 0.020076583589622388, 'y': 0.020054000000000016}"}, {"{'x': 0.02007581160765093, 'y': 0.020056000000000074}"}, {"{'x': 0.02007665689977345, 'y': 0.02005800000000002}"}, {"{'x': 0.02008547066066857, 'y': 0.020059999999999967}"}, {"{'x': 0.02008654693454681, 'y': 0.020062000000000024}"}, {"{'x': 0.02008569795865689, 'y': 0.020064000000000082}"}, {"{'x': 0.020086620244697873, 'y': 0.020066000000000028}"}, {"{'x': 0.020085925256644988, 'y': 0.020067999999999975}"}, {"{'x': 0.020096510279471236, 'y': 0.020070000000000032}"}, {"{'x': 0.02009558430966263, 'y': 0.02007200000000009}"}, {"{'x': 0.02009658358962252, 'y': 0.020074000000000036}"}, {"{'x': 0.02009581160765095, 'y': 0.020075999999999983}"}, {"{'x': 0.020096656899773357, 'y': 0.02007800000000004}"}, {"{'x': 0.02010547066066848, 'y': 0.020080000000000098}"}, {"{'x': 0.02010654693454672, 'y': 0.020082000000000044}"}, {"{'x': 0.02010569795865691, 'y': 0.02008399999999999}"}, {"{'x': 0.020106620244698004, 'y': 0.020086000000000048}"}, {"{'x': 0.020105925256645008, 'y': 0.020088000000000106}"}, {"{'x': 0.020116510279471367, 'y': 0.020090000000000052}"}, {"{'x': 0.020115584309662538, 'y': 0.020092}"}, {"{'x': 0.020116583589622428, 'y': 0.020094000000000056}"}, {"{'x': 0.02011581160765097, 'y': 0.020096000000000114}"}, {"{'x': 0.020116656899773266, 'y': 0.02009800000000006}"}, {"{'x': 0.0201254706606685, 'y': 0.020100000000000007}"}, {"{'x': 0.02012654693454685, 'y': 0.020102000000000064}"}, {"{'x': 0.02012569795865682, 'y': 0.020104000000000122}"}, {"{'x': 0.020126620244697913, 'y': 0.020106000000000068}"}, {"{'x': 0.020125925256645028, 'y': 0.020108000000000015}"}, {"{'x': 0.020136510279471276, 'y': 0.020110000000000072}"}, {"{'x': 0.020135584309662558, 'y': 0.02011200000000013}"}, {"{'x': 0.02013658358962256, 'y': 0.020113999999999965}"}, {"{'x': 0.02013581160765099, 'y': 0.020116000000000023}"}, {"{'x': 0.020136656899773397, 'y': 0.02011799999999997}"}, {"{'x': 0.02014547066066852, 'y': 0.020119999999999916}"}, {"{'x': 0.02014654693454676, 'y': 0.020121999999999973}"}, {"{'x': 0.02014569795865684, 'y': 0.02012400000000003}"}, {"{'x': 0.02014662024469782, 'y': 0.020125999999999977}"}, {"{'x': 0.020145925256645048, 'y': 0.020127999999999924}"}, {"{'x': 0.020156510279471407, 'y': 0.02012999999999998}"}, {"{'x': 0.020155584309662578, 'y': 0.02013200000000004}"}, {"{'x': 0.020156583589622468, 'y': 0.020133999999999985}"}, {"{'x': 0.020155811607650898, 'y': 0.02013599999999993}"}, {"{'x': 0.020156656899773306, 'y': 0.02013799999999999}"}, {"{'x': 0.02016547066066854, 'y': 0.020140000000000047}"}, {"{'x': 0.02016654693454667, 'y': 0.020141999999999993}"}, {"{'x': 0.02016569795865686, 'y': 0.02014399999999994}"}, {"{'x': 0.020166620244697953, 'y': 0.020145999999999997}"}, {"{'x': 0.020165925256644956, 'y': 0.020148000000000055}"}, {"{'x': 0.020176510279471316, 'y': 0.02015}"}, {"{'x': 0.020175584309662598, 'y': 0.020151999999999948}"}, {"{'x': 0.020176583589622377, 'y': 0.020154000000000005}"}, {"{'x': 0.020175811607650918, 'y': 0.020156000000000063}"}, {"{'x': 0.020176656899773437, 'y': 0.02015800000000001}"}, {"{'x': 0.02018547066066856, 'y': 0.020159999999999956}"}, {"{'x': 0.0201865469345468, 'y': 0.020162000000000013}"}, {"{'x': 0.02018569795865688, 'y': 0.02016400000000007}"}, {"{'x': 0.02018662024469786, 'y': 0.020166000000000017}"}, {"{'x': 0.020185925256644976, 'y': 0.020167999999999964}"}, {"{'x': 0.020196510279471225, 'y': 0.02017000000000002}"}, {"{'x': 0.020195584309662618, 'y': 0.02017200000000008}"}, {"{'x': 0.020196583589622508, 'y': 0.020174000000000025}"}, {"{'x': 0.010000000000000009, 'y': 0.049047577786080376}"}, {"{'x': 0.010000999999999927, 'y': 0.049041361372747616}"}, {"{'x': 0.010001999999999955, 'y': 0.048832273669467074}"}, {"{'x': 0.010002999999999984, 'y': 0.04884751479104987}"}, {"{'x': 0.010004000000000013, 'y': 0.04861696955285377}"}, {"{'x': 0.010005000000000042, 'y': 0.04916328466359654}"}, {"{'x': 0.01000599999999996, 'y': 0.04896492572777378}"}, {"{'x': 0.0100070000000001, 'y': 0.0489694380818988}"}, {"{'x': 0.010008000000000017, 'y': 0.048749621611160476}"}, {"{'x': 0.010008999999999935, 'y': 0.048775591500201165}"}, {"{'x': 0.010009999999999963, 'y': 0.04909757778608048}"}, {"{'x': 0.010010999999999992, 'y': 0.04909136137274772}"}, {"{'x': 0.010012000000000021, 'y': 0.04888227366946696}"}, {"{'x': 0.01001300000000005, 'y': 0.04889751479104987}"}, {"{'x': 0.010013999999999967, 'y': 0.04866696955285388}"}, {"{'x': 0.010015000000000107, 'y': 0.049213284663596535}"}, {"{'x': 0.010016000000000025, 'y': 0.04901492572777366}"}, {"{'x': 0.010016999999999943, 'y': 0.04901943808189879}"}, {"{'x': 0.010017999999999971, 'y': 0.04879962161116036}"}, {"{'x': 0.010019, 'y': 0.04882559150020116}"}, {"{'x': 0.010020000000000029, 'y': 0.049147577786080365}"}, {"{'x': 0.010021000000000058, 'y': 0.049141361372747716}"}, {"{'x': 0.010021999999999975, 'y': 0.048932273669467063}"}, {"{'x': 0.010023000000000115, 'y': 0.04894751479104986}"}, {"{'x': 0.010024000000000033, 'y': 0.048716969552853984}"}, {"{'x': 0.01002499999999995, 'y': 0.04926328466359653}"}, {"{'x': 0.01002599999999998, 'y': 0.04906492572777377}"}, {"{'x': 0.010027000000000008, 'y': 0.049069438081898786}"}, {"{'x': 0.010028000000000037, 'y': 0.048849621611160465}"}, {"{'x': 0.010029000000000066, 'y': 0.048875591500201154}"}, {"{'x': 0.010029999999999983, 'y': 0.04919757778608047}"}, {"{'x': 0.010030999999999901, 'y': 0.04919136137274771}"}, {"{'x': 0.010032000000000041, 'y': 0.04898227366946695}"}, {"{'x': 0.010032999999999959, 'y': 0.048997514791049857}"}, {"{'x': 0.010033999999999987, 'y': 0.04876696955285387}"}, {"{'x': 0.020888927399658308, 'y': 0.020000000000000018}"}, {"{'x': 0.021036643578734138, 'y': 0.020001999999999964}"}, {"{'x': 0.021103211241830677, 'y': 0.02000399999999991}"}, {"{'x': 0.021259510434872952, 'y': 0.020005999999999968}"}, {"{'x': 0.021317495084003157, 'y': 0.020008000000000026}"}, {"{'x': 0.020935210150664796, 'y': 0.020009999999999972}"}, {"{'x': 0.021006069320744558, 'y': 0.02001199999999992}"}, {"{'x': 0.02115807700680361, 'y': 0.020013999999999976}"}, {"{'x': 0.021220353162916927, 'y': 0.020016000000000034}"}, {"{'x': 0.02138094386294198, 'y': 0.02001799999999998}"}, {"{'x': 0.020908927399658328, 'y': 0.020019999999999927}"}, {"{'x': 0.02105664357873427, 'y': 0.020021999999999984}"}, {"{'x': 0.021123211241830808, 'y': 0.020024000000000042}"}, {"{'x': 0.02127951043487286, 'y': 0.020025999999999988}"}, {"{'x': 0.021337495084003066, 'y': 0.020027999999999935}"}, {"{'x': 0.020955210150664705, 'y': 0.020029999999999992}"}, {"{'x': 0.021026069320744578, 'y': 0.02003200000000005}"}, {"{'x': 0.02117807700680352, 'y': 0.020033999999999996}"}, {"{'x': 0.02124035316291706, 'y': 0.020035999999999943}"}, {"{'x': 0.02140094386294189, 'y': 0.020038}"}, {"{'x': 0.020928927399658348, 'y': 0.020040000000000058}"}, {"{'x': 0.021076643578734178, 'y': 0.020042000000000004}"}, {"{'x': 0.021143211241830828, 'y': 0.02004399999999995}"}, {"{'x': 0.02129951043487277, 'y': 0.020046000000000008}"}, {"{'x': 0.021357495084003086, 'y': 0.020048000000000066}"}, {"{'x': 0.020975210150664836, 'y': 0.020050000000000012}"}, {"{'x': 0.021046069320744598, 'y': 0.02005199999999996}"}, {"{'x': 0.02119807700680343, 'y': 0.020054000000000016}"}, {"{'x': 0.02126035316291708, 'y': 0.020056000000000074}"}, {"{'x': 0.010000000000000009, 'y': 0.0497982369777723}"}, {"{'x': 0.010000999999999927, 'y': 0.04980581761563441}"}, {"{'x': 0.010001999999999955, 'y': 0.0497714651199459}"}, {"{'x': 0.010002999999999984, 'y': 0.049782547839505864}"}, {"{'x': 0.010004000000000013, 'y': 0.04974469326211928}"}, {"{'x': 0.010005000000000042, 'y': 0.049842452503698786}"}, {"{'x': 0.01000599999999996, 'y': 0.049809851048859155}"}, {"{'x': 0.0100070000000001, 'y': 0.04981918272757013}"}, {"{'x': 0.010008000000000017, 'y': 0.04978307919103275}"}, {"{'x': 0.010008999999999935, 'y': 0.04979591295144137}"}, {"{'x': 0.010009999999999963, 'y': 0.04984823697777219}"}, {"{'x': 0.010010999999999992, 'y': 0.0498558176156344}"}, {"{'x': 0.010012000000000021, 'y': 0.04982146511994601}"}, {"{'x': 0.01001300000000005, 'y': 0.04983254783950586}"}, {"{'x': 0.010013999999999967, 'y': 0.04979469326211938}"}, {"{'x': 0.010015000000000107, 'y': 0.04989245250369878}"}, {"{'x': 0.010016000000000025, 'y': 0.04985985104885904}"}, {"{'x': 0.010016999999999943, 'y': 0.04986918272757013}"}, {"{'x': 0.010017999999999971, 'y': 0.04983307919103286}"}, {"{'x': 0.010019, 'y': 0.04984591295144136}"}, {"{'x': 0.010020000000000029, 'y': 0.04989823697777229}"}, {"{'x': 0.010021000000000058, 'y': 0.049905817615634396}"}, {"{'x': 0.010021999999999975, 'y': 0.04987146511994589}"}, {"{'x': 0.010023000000000115, 'y': 0.04988254783950585}"}, {"{'x': 0.010024000000000033, 'y': 0.049844693262119266}"}, {"{'x': 0.01002499999999995, 'y': 0.049942452503698775}"}, {"{'x': 0.01002599999999998, 'y': 0.049909851048859144}"}, {"{'x': 0.010027000000000008, 'y': 0.04991918272757012}"}, {"{'x': 0.010028000000000037, 'y': 0.04988307919103274}"}, {"{'x': 0.010029000000000066, 'y': 0.04989591295144136}"}, {"{'x': 0.010029999999999983, 'y': 0.0499482369777724}"}, {"{'x': 0.010030999999999901, 'y': 0.0499558176156345}"}, {"{'x': 0.010032000000000041, 'y': 0.049921465119945996}"}, {"{'x': 0.010032999999999959, 'y': 0.04993254783950585}"}, {"{'x': 0.010033999999999987, 'y': 0.04989469326211937}"}, {"{'x': 0.010035000000000016, 'y': 0.04999245250369877}"}, {"{'x': 0.010036000000000045, 'y': 0.04995985104885903}"}, {"{'x': 0.010037000000000074, 'y': 0.049969182727570116}"}, {"{'x': 0.010037999999999991, 'y': 0.04993307919103285}"}, {"{'x': 0.010038999999999909, 'y': 0.04994591295144135}"}, {"{'x': 0.010040000000000049, 'y': 0.04999823697777228}"}, {"{'x': 0.010040999999999967, 'y': 0.050005817615634496}"}, {"{'x': 0.010041999999999995, 'y': 0.04997146511994588}"}, {"{'x': 0.010043000000000024, 'y': 0.04998254783950584}"}, {"{'x': 0.010044000000000053, 'y': 0.049944693262119255}"}, {"{'x': 0.010045000000000082, 'y': 0.050042452503698764}"}, {"{'x': 0.010046, 'y': 0.05000985104885913}"}, {"{'x': 0.010046999999999917, 'y': 0.05001918272757011}"}, {"{'x': 0.010048000000000057, 'y': 0.04998307919103273}"}, {"{'x': 0.010048999999999975, 'y': 0.049995912951441346}"}, {"{'x': 0.010050000000000003, 'y': 0.05004823697777239}"}, {"{'x': 0.010051000000000032, 'y': 0.05005581761563449}"}, {"{'x': 0.010052000000000061, 'y': 0.050021465119945985}"}, {"{'x': 0.01005300000000009, 'y': 0.050032547839505837}"}, {"{'x': 0.010054000000000007, 'y': 0.04999469326211936}"}, {"{'x': 0.010054999999999925, 'y': 0.05009245250369876}"}, {"{'x': 0.010056000000000065, 'y': 0.050059851048859016}"}, {"{'x': 0.010056999999999983, 'y': 0.050069182727570105}"}, {"{'x': 0.010058000000000011, 'y': 0.050033079191032837}"}, {"{'x': 0.01005900000000004, 'y': 0.05004591295144134}"}, {"{'x': 0.010059999999999958, 'y': 0.05009823697777227}"}, {"{'x': 0.010061000000000098, 'y': 0.050105817615634485}"}, {"{'x': 0.010062000000000015, 'y': 0.05007146511994587}"}, {"{'x': 0.010062999999999933, 'y': 0.05008254783950583}"}, {"{'x': 0.010063999999999962, 'y': 0.050044693262119244}"}, {"{'x': 0.01006499999999999, 'y': 0.05014245250369875}"}, {"{'x': 0.01006600000000002, 'y': 0.05010985104885912}"}, {"{'x': 0.010067000000000048, 'y': 0.0501191827275701}"}, {"{'x': 0.010067999999999966, 'y': 0.05008307919103272}"}, {"{'x': 0.010069000000000106, 'y': 0.050095912951441335}"}, {"{'x': 0.010070000000000023, 'y': 0.050148236977772376}"}, {"{'x': 0.010070999999999941, 'y': 0.05015581761563448}"}, {"{'x': 0.01007199999999997, 'y': 0.050121465119945974}"}, {"{'x': 0.010072999999999999, 'y': 0.050132547839505825}"}, {"{'x': 0.010074000000000027, 'y': 0.05009469326211935}"}, {"{'x': 0.010075000000000056, 'y': 0.05019245250369875}"}, {"{'x': 0.010075999999999974, 'y': 0.05015985104885923}"}, {"{'x': 0.020188312154079235, 'y': 0.020000000000000018}"}, {"{'x': 0.020215858981108337, 'y': 0.020001999999999964}"}, {"{'x': 0.02022663255471724, 'y': 0.02000399999999991}"}, {"{'x': 0.020255580214425306, 'y': 0.020005999999999968}"}, {"{'x': 0.020264952955355353, 'y': 0.020008000000000026}"}, {"{'x': 0.020205998364449806, 'y': 0.020009999999999972}"}, {"{'x': 0.02021747235439819, 'y': 0.02001199999999992}"}, {"{'x': 0.020245719597766776, 'y': 0.020013999999999976}"}, {"{'x': 0.020255792755036195, 'y': 0.020016000000000034}"}, {"{'x': 0.02028544083108419, 'y': 0.02001799999999998}"}, {"{'x': 0.020208312154079255, 'y': 0.020019999999999927}"}, {"{'x': 0.020235858981108246, 'y': 0.020021999999999984}"}, {"{'x': 0.020246632554717148, 'y': 0.020024000000000042}"}, {"{'x': 0.020275580214425437, 'y': 0.020025999999999988}"}, {"{'x': 0.020284952955355373, 'y': 0.020027999999999935}"}, {"{'x': 0.020225998364449937, 'y': 0.020029999999999992}"}, {"{'x': 0.02023747235439821, 'y': 0.02003200000000005}"}, {"{'x': 0.020265719597766907, 'y': 0.020033999999999996}"}, {"{'x': 0.020275792755036104, 'y': 0.020035999999999943}"}, {"{'x': 0.0203054408310841, 'y': 0.020038}"}, {"{'x': 0.020228312154079275, 'y': 0.020040000000000058}"}, {"{'x': 0.020255858981108377, 'y': 0.020042000000000004}"}, {"{'x': 0.020266632554717168, 'y': 0.02004399999999995}"}, {"{'x': 0.020295580214425346, 'y': 0.020046000000000008}"}, {"{'x': 0.020304952955355282, 'y': 0.020048000000000066}"}, {"{'x': 0.020245998364449846, 'y': 0.020050000000000012}"}, {"{'x': 0.02025747235439823, 'y': 0.02005199999999996}"}, {"{'x': 0.020285719597766816, 'y': 0.020054000000000016}"}, {"{'x': 0.020295792755036124, 'y': 0.020056000000000074}"}, {"{'x': 0.02032544083108423, 'y': 0.02005800000000002}"}, {"{'x': 0.020248312154079295, 'y': 0.020059999999999967}"}, {"{'x': 0.020275858981108286, 'y': 0.020062000000000024}"}, {"{'x': 0.020286632554717188, 'y': 0.020064000000000082}"}, {"{'x': 0.020315580214425477, 'y': 0.020066000000000028}"}, {"{'x': 0.020324952955355302, 'y': 0.020067999999999975}"}, {"{'x': 0.020265998364449755, 'y': 0.020070000000000032}"}, {"{'x': 0.02027747235439825, 'y': 0.02007200000000009}"}, {"{'x': 0.020305719597766947, 'y': 0.020074000000000036}"}, {"{'x': 0.020315792755036144, 'y': 0.020075999999999983}"}, {"{'x': 0.02034544083108414, 'y': 0.02007800000000004}"}, {"{'x': 0.020268312154079204, 'y': 0.020080000000000098}"}, {"{'x': 0.020295858981108417, 'y': 0.020082000000000044}"}, {"{'x': 0.020306632554717208, 'y': 0.02008399999999999}"}, {"{'x': 0.020335580214425386, 'y': 0.020086000000000048}"}, {"{'x': 0.020344952955355322, 'y': 0.020088000000000106}"}, {"{'x': 0.020285998364449886, 'y': 0.020090000000000052}"}, {"{'x': 0.02029747235439827, 'y': 0.020092}"}, {"{'x': 0.020325719597766856, 'y': 0.020094000000000056}"}, {"{'x': 0.020335792755036164, 'y': 0.020096000000000114}"}, {"{'x': 0.020365440831084047, 'y': 0.02009800000000006}"}, {"{'x': 0.020288312154079224, 'y': 0.020100000000000007}"}, {"{'x': 0.020315858981108326, 'y': 0.020102000000000064}"}, {"{'x': 0.020326632554717228, 'y': 0.020104000000000122}"}, {"{'x': 0.020355580214425295, 'y': 0.020106000000000068}"}, {"{'x': 0.020364952955355342, 'y': 0.020108000000000015}"}, {"{'x': 0.020305998364449795, 'y': 0.020110000000000072}"}, {"{'x': 0.02031747235439818, 'y': 0.02011200000000013}"}, {"{'x': 0.020345719597766765, 'y': 0.020113999999999965}"}, {"{'x': 0.020355792755036184, 'y': 0.020116000000000023}"}, {"{'x': 0.02038544083108418, 'y': 0.02011799999999997}"}, {"{'x': 0.020308312154079244, 'y': 0.020119999999999916}"}, {"{'x': 0.020335858981108457, 'y': 0.020121999999999973}"}, {"{'x': 0.020346632554717137, 'y': 0.02012400000000003}"}, {"{'x': 0.020375580214425426, 'y': 0.020125999999999977}"}, {"{'x': 0.020384952955355362, 'y': 0.020127999999999924}"}, {"{'x': 0.020325998364449926, 'y': 0.02012999999999998}"}, {"{'x': 0.0203374723543982, 'y': 0.02013200000000004}"}, {"{'x': 0.020365719597766896, 'y': 0.020133999999999985}"}, {"{'x': 0.020375792755036204, 'y': 0.02013599999999993}"}, {"{'x': 0.020405440831084087, 'y': 0.02013799999999999}"}, {"{'x': 0.020328312154079264, 'y': 0.020140000000000047}"}, {"{'x': 0.020355858981108366, 'y': 0.020141999999999993}"}, {"{'x': 0.020366632554717157, 'y': 0.02014399999999994}"}, {"{'x': 0.020395580214425335, 'y': 0.020145999999999997}"}, {"{'x': 0.020404952955355382, 'y': 0.020148000000000055}"}, {"{'x': 0.020345998364449835, 'y': 0.02015}"}, {"{'x': 0.02035747235439822, 'y': 0.020151999999999948}"}, {"{'x': 0.020385719597766805, 'y': 0.020154000000000005}"}, {"{'x': 0.020395792755036113, 'y': 0.020156000000000063}"}, {"{'x': 0.02042544083108422, 'y': 0.02015800000000001}"}, {"{'x': 0.020348312154079284, 'y': 0.020159999999999956}"}, {"{'x': 0.020375858981108275, 'y': 0.020162000000000013}"}, {"{'x': 0.020386632554717177, 'y': 0.02016400000000007}"}, {"{'x': 0.020415580214425466, 'y': 0.020166000000000017}"}, {"{'x': 0.02042495295535529, 'y': 0.020167999999999964}"}, {"{'x': 0.020365998364449744, 'y': 0.02017000000000002}"}, {"{'x': 0.02037747235439824, 'y': 0.02017200000000008}"}, {"{'x': 0.020405719597766936, 'y': 0.020174000000000025}"}, {"{'x': 0.020415792755036133, 'y': 0.02017599999999997}"}, {"{'x': 0.020445440831084127, 'y': 0.02017800000000003}"}, {"{'x': 0.020368312154079304, 'y': 0.020180000000000087}"}, {"{'x': 0.020395858981108406, 'y': 0.020182000000000033}"}, {"{'x': 0.020406632554717197, 'y': 0.02018399999999998}"}, {"{'x': 0.020435580214425375, 'y': 0.020186000000000037}"}, {"{'x': 0.02044495295535531, 'y': 0.020188000000000095}"}, {"{'x': 0.020385998364449875, 'y': 0.02019000000000004}"}, {"{'x': 0.02039747235439826, 'y': 0.020191999999999988}"}, {"{'x': 0.020425719597766845, 'y': 0.020194000000000045}"}, {"{'x': 0.020435792755036153, 'y': 0.020196000000000103}"}, {"{'x': 0.020465440831084036, 'y': 0.02019800000000005}"}, {"{'x': 0.020188312154079235, 'y': 0.020000000000000018}"}, {"{'x': 0.020215858981108337, 'y': 0.020001999999999964}"}, {"{'x': 0.02022663255471724, 'y': 0.02000399999999991}"}, {"{'x': 0.020255580214425306, 'y': 0.020005999999999968}"}, {"{'x': 0.020264952955355353, 'y': 0.020008000000000026}"}, {"{'x': 0.020205998364449806, 'y': 0.020009999999999972}"}, {"{'x': 0.02021747235439819, 'y': 0.02001199999999992}"}, {"{'x': 0.020245719597766776, 'y': 0.020013999999999976}"}, {"{'x': 0.020255792755036195, 'y': 0.020016000000000034}"}, {"{'x': 0.02028544083108419, 'y': 0.02001799999999998}"}, {"{'x': 0.020208312154079255, 'y': 0.020019999999999927}"}, {"{'x': 0.020235858981108246, 'y': 0.020021999999999984}"}, {"{'x': 0.020246632554717148, 'y': 0.020024000000000042}"}, {"{'x': 0.020275580214425437, 'y': 0.020025999999999988}"}, {"{'x': 0.020284952955355373, 'y': 0.020027999999999935}"}, {"{'x': 0.020225998364449937, 'y': 0.020029999999999992}"}, {"{'x': 0.02023747235439821, 'y': 0.02003200000000005}"}, {"{'x': 0.020265719597766907, 'y': 0.020033999999999996}"}, {"{'x': 0.020275792755036104, 'y': 0.020035999999999943}"}, {"{'x': 0.0203054408310841, 'y': 0.020038}"}, {"{'x': 0.020228312154079275, 'y': 0.020040000000000058}"}, {"{'x': 0.020255858981108377, 'y': 0.020042000000000004}"}, {"{'x': 0.020266632554717168, 'y': 0.02004399999999995}"}, {"{'x': 0.020295580214425346, 'y': 0.020046000000000008}"}, {"{'x': 0.020304952955355282, 'y': 0.020048000000000066}"}, {"{'x': 0.020245998364449846, 'y': 0.020050000000000012}"}, {"{'x': 0.02025747235439823, 'y': 0.02005199999999996}"}, {"{'x': 0.020285719597766816, 'y': 0.020054000000000016}"}, {"{'x': 0.020295792755036124, 'y': 0.020056000000000074}"}, {"{'x': 0.02032544083108423, 'y': 0.02005800000000002}"}, {"{'x': 0.020248312154079295, 'y': 0.020059999999999967}"}, {"{'x': 0.020275858981108286, 'y': 0.020062000000000024}"}, {"{'x': 0.020286632554717188, 'y': 0.020064000000000082}"}, {"{'x': 0.020315580214425477, 'y': 0.020066000000000028}"}, {"{'x': 0.020324952955355302, 'y': 0.020067999999999975}"}, {"{'x': 0.020265998364449755, 'y': 0.020070000000000032}"}, {"{'x': 0.02027747235439825, 'y': 0.02007200000000009}"}, {"{'x': 0.020305719597766947, 'y': 0.020074000000000036}"}, {"{'x': 0.020315792755036144, 'y': 0.020075999999999983}"}, {"{'x': 0.02034544083108414, 'y': 0.02007800000000004}"}, {"{'x': 0.020268312154079204, 'y': 0.020080000000000098}"}, {"{'x': 0.020295858981108417, 'y': 0.020082000000000044}"}, {"{'x': 0.020306632554717208, 'y': 0.02008399999999999}"}, {"{'x': 0.020335580214425386, 'y': 0.020086000000000048}"}, {"{'x': 0.020344952955355322, 'y': 0.020088000000000106}"}, {"{'x': 0.020285998364449886, 'y': 0.020090000000000052}"}, {"{'x': 0.02029747235439827, 'y': 0.020092}"}, {"{'x': 0.020325719597766856, 'y': 0.020094000000000056}"}, {"{'x': 0.020335792755036164, 'y': 0.020096000000000114}"}, {"{'x': 0.020365440831084047, 'y': 0.02009800000000006}"}, {"{'x': 0.020288312154079224, 'y': 0.020100000000000007}"}, {"{'x': 0.020315858981108326, 'y': 0.020102000000000064}"}, {"{'x': 0.020326632554717228, 'y': 0.020104000000000122}"}, {"{'x': 0.020355580214425295, 'y': 0.020106000000000068}"}, {"{'x': 0.020364952955355342, 'y': 0.020108000000000015}"}, {"{'x': 0.020305998364449795, 'y': 0.020110000000000072}"}, {"{'x': 0.02031747235439818, 'y': 0.02011200000000013}"}, {"{'x': 0.020345719597766765, 'y': 0.020113999999999965}"}, {"{'x': 0.020355792755036184, 'y': 0.020116000000000023}"}, {"{'x': 0.02038544083108418, 'y': 0.02011799999999997}"}, {"{'x': 0.020308312154079244, 'y': 0.020119999999999916}"}, {"{'x': 0.020335858981108457, 'y': 0.020121999999999973}"}, {"{'x': 0.020346632554717137, 'y': 0.02012400000000003}"}, {"{'x': 0.020375580214425426, 'y': 0.020125999999999977}"}, {"{'x': 0.020384952955355362, 'y': 0.020127999999999924}"}, {"{'x': 0.020325998364449926, 'y': 0.02012999999999998}"}, {"{'x': 0.0203374723543982, 'y': 0.02013200000000004}"}, {"{'x': 0.020365719597766896, 'y': 0.020133999999999985}"}, {"{'x': 0.020375792755036204, 'y': 0.02013599999999993}"}, {"{'x': 0.020405440831084087, 'y': 0.02013799999999999}"}, {"{'x': 0.020328312154079264, 'y': 0.020140000000000047}"}, {"{'x': 0.020355858981108366, 'y': 0.020141999999999993}"}, {"{'x': 0.020366632554717157, 'y': 0.02014399999999994}"}, {"{'x': 0.020395580214425335, 'y': 0.020145999999999997}"}, {"{'x': 0.020404952955355382, 'y': 0.020148000000000055}"}, {"{'x': 0.020345998364449835, 'y': 0.02015}"}, {"{'x': 0.02035747235439822, 'y': 0.020151999999999948}"}, {"{'x': 0.020385719597766805, 'y': 0.020154000000000005}"}, {"{'x': 0.020395792755036113, 'y': 0.020156000000000063}"}, {"{'x': 0.02042544083108422, 'y': 0.02015800000000001}"}, {"{'x': 0.020348312154079284, 'y': 0.020159999999999956}"}, {"{'x': 0.020375858981108275, 'y': 0.020162000000000013}"}, {"{'x': 0.020386632554717177, 'y': 0.02016400000000007}"}, {"{'x': 0.020415580214425466, 'y': 0.020166000000000017}"}, {"{'x': 0.02042495295535529, 'y': 0.020167999999999964}"}, {"{'x': 0.020365998364449744, 'y': 0.02017000000000002}"}, {"{'x': 0.02037747235439824, 'y': 0.02017200000000008}"}, {"{'x': 0.020405719597766936, 'y': 0.020174000000000025}"}, {"{'x': 0.020415792755036133, 'y': 0.02017599999999997}"}, {"{'x': 0.020445440831084127, 'y': 0.02017800000000003}"}, {"{'x': 0.020368312154079304, 'y': 0.020180000000000087}"}, {"{'x': 0.020395858981108406, 'y': 0.020182000000000033}"}, {"{'x': 0.020406632554717197, 'y': 0.02018399999999998}"}, {"{'x': 0.020435580214425375, 'y': 0.020186000000000037}"}, {"{'x': 0.02044495295535531, 'y': 0.020188000000000095}"}, {"{'x': 0.020385998364449875, 'y': 0.02019000000000004}"}, {"{'x': 0.02039747235439826, 'y': 0.020191999999999988}"}, {"{'x': 0.020425719597766845, 'y': 0.020194000000000045}"}, {"{'x': 0.020435792755036153, 'y': 0.020196000000000103}"}, {"{'x': 0.020465440831084036, 'y': 0.02019800000000005}"}, {"{'x': 0.020188312154079235, 'y': 0.020000000000000018}"}, {"{'x': 0.020215858981108337, 'y': 0.020001999999999964}"}, {"{'x': 0.02022663255471724, 'y': 0.02000399999999991}"}, {"{'x': 0.020255580214425306, 'y': 0.020005999999999968}"}, {"{'x': 0.020264952955355353, 'y': 0.020008000000000026}"}, {"{'x': 0.020205998364449806, 'y': 0.020009999999999972}"}, {"{'x': 0.02021747235439819, 'y': 0.02001199999999992}"}, {"{'x': 0.020245719597766776, 'y': 0.020013999999999976}"}, {"{'x': 0.020255792755036195, 'y': 0.020016000000000034}"}, {"{'x': 0.02028544083108419, 'y': 0.02001799999999998}"}, {"{'x': 0.020208312154079255, 'y': 0.020019999999999927}"}, {"{'x': 0.020235858981108246, 'y': 0.020021999999999984}"}, {"{'x': 0.020246632554717148, 'y': 0.020024000000000042}"}, {"{'x': 0.020275580214425437, 'y': 0.020025999999999988}"}, {"{'x': 0.020284952955355373, 'y': 0.020027999999999935}"}, {"{'x': 0.020225998364449937, 'y': 0.020029999999999992}"}, {"{'x': 0.02023747235439821, 'y': 0.02003200000000005}"}, {"{'x': 0.020265719597766907, 'y': 0.020033999999999996}"}, {"{'x': 0.020275792755036104, 'y': 0.020035999999999943}"}, {"{'x': 0.0203054408310841, 'y': 0.020038}"}, {"{'x': 0.020228312154079275, 'y': 0.020040000000000058}"}, {"{'x': 0.020255858981108377, 'y': 0.020042000000000004}"}, {"{'x': 0.020266632554717168, 'y': 0.02004399999999995}"}, {"{'x': 0.020295580214425346, 'y': 0.020046000000000008}"}, {"{'x': 0.020304952955355282, 'y': 0.020048000000000066}"}, {"{'x': 0.020245998364449846, 'y': 0.020050000000000012}"}, {"{'x': 0.02025747235439823, 'y': 0.02005199999999996}"}, {"{'x': 0.020285719597766816, 'y': 0.020054000000000016}"}, {"{'x': 0.020295792755036124, 'y': 0.020056000000000074}"}, {"{'x': 0.02032544083108423, 'y': 0.02005800000000002}"}, {"{'x': 0.020248312154079295, 'y': 0.020059999999999967}"}, {"{'x': 0.020275858981108286, 'y': 0.020062000000000024}"}, {"{'x': 0.020286632554717188, 'y': 0.020064000000000082}"}, {"{'x': 0.020315580214425477, 'y': 0.020066000000000028}"}, {"{'x': 0.020324952955355302, 'y': 0.020067999999999975}"}, {"{'x': 0.020265998364449755, 'y': 0.020070000000000032}"}, {"{'x': 0.02027747235439825, 'y': 0.02007200000000009}"}, {"{'x': 0.020305719597766947, 'y': 0.020074000000000036}"}, {"{'x': 0.020315792755036144, 'y': 0.020075999999999983}"}, {"{'x': 0.02034544083108414, 'y': 0.02007800000000004}"}, {"{'x': 0.020268312154079204, 'y': 0.020080000000000098}"}, {"{'x': 0.020295858981108417, 'y': 0.020082000000000044}"}, {"{'x': 0.020306632554717208, 'y': 0.02008399999999999}"}, {"{'x': 0.020335580214425386, 'y': 0.020086000000000048}"}, {"{'x': 0.020344952955355322, 'y': 0.020088000000000106}"}, {"{'x': 0.020285998364449886, 'y': 0.020090000000000052}"}, {"{'x': 0.02029747235439827, 'y': 0.020092}"}, {"{'x': 0.020325719597766856, 'y': 0.020094000000000056}"}, {"{'x': 0.020335792755036164, 'y': 0.020096000000000114}"}, {"{'x': 0.020365440831084047, 'y': 0.02009800000000006}"}, {"{'x': 0.020288312154079224, 'y': 0.020100000000000007}"}, {"{'x': 0.020315858981108326, 'y': 0.020102000000000064}"}, {"{'x': 0.020326632554717228, 'y': 0.020104000000000122}"}, {"{'x': 0.020355580214425295, 'y': 0.020106000000000068}"}, {"{'x': 0.020364952955355342, 'y': 0.020108000000000015}"}, {"{'x': 0.020305998364449795, 'y': 0.020110000000000072}"}, {"{'x': 0.02031747235439818, 'y': 0.02011200000000013}"}, {"{'x': 0.020345719597766765, 'y': 0.020113999999999965}"}, {"{'x': 0.020355792755036184, 'y': 0.020116000000000023}"}, {"{'x': 0.02038544083108418, 'y': 0.02011799999999997}"}, {"{'x': 0.020308312154079244, 'y': 0.020119999999999916}"}, {"{'x': 0.020335858981108457, 'y': 0.020121999999999973}"}, {"{'x': 0.020346632554717137, 'y': 0.02012400000000003}"}, {"{'x': 0.020375580214425426, 'y': 0.020125999999999977}"}, {"{'x': 0.020384952955355362, 'y': 0.020127999999999924}"}, {"{'x': 0.020325998364449926, 'y': 0.02012999999999998}"}, {"{'x': 0.0203374723543982, 'y': 0.02013200000000004}"}, {"{'x': 0.020365719597766896, 'y': 0.020133999999999985}"}, {"{'x': 0.020375792755036204, 'y': 0.02013599999999993}"}, {"{'x': 0.020405440831084087, 'y': 0.02013799999999999}"}, {"{'x': 0.020328312154079264, 'y': 0.020140000000000047}"}, {"{'x': 0.020355858981108366, 'y': 0.020141999999999993}"}, {"{'x': 0.020366632554717157, 'y': 0.02014399999999994}"}, {"{'x': 0.020395580214425335, 'y': 0.020145999999999997}"}, {"{'x': 0.020404952955355382, 'y': 0.020148000000000055}"}, {"{'x': 0.020345998364449835, 'y': 0.02015}"}, {"{'x': 0.02035747235439822, 'y': 0.020151999999999948}"}, {"{'x': 0.020385719597766805, 'y': 0.020154000000000005}"}, {"{'x': 0.020395792755036113, 'y': 0.020156000000000063}"}, {"{'x': 0.02042544083108422, 'y': 0.02015800000000001}"}, {"{'x': 0.020348312154079284, 'y': 0.020159999999999956}"}, {"{'x': 0.020375858981108275, 'y': 0.020162000000000013}"}, {"{'x': 0.020386632554717177, 'y': 0.02016400000000007}"}, {"{'x': 0.020415580214425466, 'y': 0.020166000000000017}"}, {"{'x': 0.02042495295535529, 'y': 0.020167999999999964}"}, {"{'x': 0.020365998364449744, 'y': 0.02017000000000002}"}, {"{'x': 0.02037747235439824, 'y': 0.02017200000000008}"}, {"{'x': 0.020405719597766936, 'y': 0.020174000000000025}"}, {"{'x': 0.020415792755036133, 'y': 0.02017599999999997}"}, {"{'x': 0.020445440831084127, 'y': 0.02017800000000003}"}, {"{'x': 0.020368312154079304, 'y': 0.020180000000000087}"}, {"{'x': 0.020395858981108406, 'y': 0.020182000000000033}"}, {"{'x': 0.020406632554717197, 'y': 0.02018399999999998}"}, {"{'x': 0.020435580214425375, 'y': 0.020186000000000037}"}, {"{'x': 0.02044495295535531, 'y': 0.020188000000000095}"}, {"{'x': 0.020385998364449875, 'y': 0.02019000000000004}"}, {"{'x': 0.02039747235439826, 'y': 0.020191999999999988}"}, {"{'x': 0.020425719597766845, 'y': 0.020194000000000045}"}, {"{'x': 0.020435792755036153, 'y': 0.020196000000000103}"}, {"{'x': 0.020465440831084036, 'y': 0.02019800000000005}"}, {"{'x': 0.020188312154079235, 'y': 0.020000000000000018}"}, {"{'x': 0.020215858981108337, 'y': 0.020001999999999964}"}, {"{'x': 0.02022663255471724, 'y': 0.02000399999999991}"}, {"{'x': 0.020255580214425306, 'y': 0.020005999999999968}"}, {"{'x': 0.020264952955355353, 'y': 0.020008000000000026}"}, {"{'x': 0.020205998364449806, 'y': 0.020009999999999972}"}, {"{'x': 0.02021747235439819, 'y': 0.02001199999999992}"}, {"{'x': 0.020245719597766776, 'y': 0.020013999999999976}"}, {"{'x': 0.020255792755036195, 'y': 0.020016000000000034}"}, {"{'x': 0.02028544083108419, 'y': 0.02001799999999998}"}, {"{'x': 0.020208312154079255, 'y': 0.020019999999999927}"}, {"{'x': 0.020235858981108246, 'y': 0.020021999999999984}"}, {"{'x': 0.020246632554717148, 'y': 0.020024000000000042}"}, {"{'x': 0.020275580214425437, 'y': 0.020025999999999988}"}, {"{'x': 0.020284952955355373, 'y': 0.020027999999999935}"}, {"{'x': 0.020225998364449937, 'y': 0.020029999999999992}"}, {"{'x': 0.02023747235439821, 'y': 0.02003200000000005}"}, {"{'x': 0.020265719597766907, 'y': 0.020033999999999996}"}, {"{'x': 0.020275792755036104, 'y': 0.020035999999999943}"}, {"{'x': 0.0203054408310841, 'y': 0.020038}"}, {"{'x': 0.020228312154079275, 'y': 0.020040000000000058}"}, {"{'x': 0.020255858981108377, 'y': 0.020042000000000004}"}, {"{'x': 0.020266632554717168, 'y': 0.02004399999999995}"}, {"{'x': 0.020295580214425346, 'y': 0.020046000000000008}"}, {"{'x': 0.020304952955355282, 'y': 0.020048000000000066}"}, {"{'x': 0.020245998364449846, 'y': 0.020050000000000012}"}, {"{'x': 0.02025747235439823, 'y': 0.02005199999999996}"}, {"{'x': 0.020285719597766816, 'y': 0.020054000000000016}"}, {"{'x': 0.020295792755036124, 'y': 0.020056000000000074}"}, {"{'x': 0.02032544083108423, 'y': 0.02005800000000002}"}, {"{'x': 0.020248312154079295, 'y': 0.020059999999999967}"}, {"{'x': 0.020275858981108286, 'y': 0.020062000000000024}"}, {"{'x': 0.020286632554717188, 'y': 0.020064000000000082}"}, {"{'x': 0.020315580214425477, 'y': 0.020066000000000028}"}, {"{'x': 0.020324952955355302, 'y': 0.020067999999999975}"}, {"{'x': 0.020265998364449755, 'y': 0.020070000000000032}"}, {"{'x': 0.02027747235439825, 'y': 0.02007200000000009}"}, {"{'x': 0.020305719597766947, 'y': 0.020074000000000036}"}, {"{'x': 0.020315792755036144, 'y': 0.020075999999999983}"}, {"{'x': 0.02034544083108414, 'y': 0.02007800000000004}"}, {"{'x': 0.020268312154079204, 'y': 0.020080000000000098}"}, {"{'x': 0.020295858981108417, 'y': 0.020082000000000044}"}, {"{'x': 0.020306632554717208, 'y': 0.02008399999999999}"}, {"{'x': 0.020335580214425386, 'y': 0.020086000000000048}"}, {"{'x': 0.020344952955355322, 'y': 0.020088000000000106}"}, {"{'x': 0.020285998364449886, 'y': 0.020090000000000052}"}, {"{'x': 0.02029747235439827, 'y': 0.020092}"}, {"{'x': 0.020325719597766856, 'y': 0.020094000000000056}"}, {"{'x': 0.020335792755036164, 'y': 0.020096000000000114}"}, {"{'x': 0.020365440831084047, 'y': 0.02009800000000006}"}, {"{'x': 0.020288312154079224, 'y': 0.020100000000000007}"}, {"{'x': 0.020315858981108326, 'y': 0.020102000000000064}"}, {"{'x': 0.020326632554717228, 'y': 0.020104000000000122}"}, {"{'x': 0.020355580214425295, 'y': 0.020106000000000068}"}, {"{'x': 0.020364952955355342, 'y': 0.020108000000000015}"}, {"{'x': 0.020305998364449795, 'y': 0.020110000000000072}"}, {"{'x': 0.02031747235439818, 'y': 0.02011200000000013}"}, {"{'x': 0.020345719597766765, 'y': 0.020113999999999965}"}, {"{'x': 0.020355792755036184, 'y': 0.020116000000000023}"}, {"{'x': 0.02038544083108418, 'y': 0.02011799999999997}"}, {"{'x': 0.020308312154079244, 'y': 0.020119999999999916}"}, {"{'x': 0.020335858981108457, 'y': 0.020121999999999973}"}, {"{'x': 0.020346632554717137, 'y': 0.02012400000000003}"}, {"{'x': 0.020375580214425426, 'y': 0.020125999999999977}"}, {"{'x': 0.020384952955355362, 'y': 0.020127999999999924}"}, {"{'x': 0.020325998364449926, 'y': 0.02012999999999998}"}, {"{'x': 0.0203374723543982, 'y': 0.02013200000000004}"}, {"{'x': 0.020365719597766896, 'y': 0.020133999999999985}"}, {"{'x': 0.020375792755036204, 'y': 0.02013599999999993}"}, {"{'x': 0.020405440831084087, 'y': 0.02013799999999999}"}, {"{'x': 0.020328312154079264, 'y': 0.020140000000000047}"}, {"{'x': 0.020355858981108366, 'y': 0.020141999999999993}"}, {"{'x': 0.020366632554717157, 'y': 0.02014399999999994}"}, {"{'x': 0.020395580214425335, 'y': 0.020145999999999997}"}, {"{'x': 0.020404952955355382, 'y': 0.020148000000000055}"}, {"{'x': 0.020345998364449835, 'y': 0.02015}"}, {"{'x': 0.02035747235439822, 'y': 0.020151999999999948}"}, {"{'x': 0.020385719597766805, 'y': 0.020154000000000005}"}, {"{'x': 0.020395792755036113, 'y': 0.020156000000000063}"}, {"{'x': 0.02042544083108422, 'y': 0.02015800000000001}"}, {"{'x': 0.020348312154079284, 'y': 0.020159999999999956}"}, {"{'x': 0.020375858981108275, 'y': 0.020162000000000013}"}, {"{'x': 0.020386632554717177, 'y': 0.02016400000000007}"}, {"{'x': 0.020415580214425466, 'y': 0.020166000000000017}"}, {"{'x': 0.02042495295535529, 'y': 0.020167999999999964}"}, {"{'x': 0.020365998364449744, 'y': 0.02017000000000002}"}, {"{'x': 0.02037747235439824, 'y': 0.02017200000000008}"}, {"{'x': 0.020405719597766936, 'y': 0.020174000000000025}"}, {"{'x': 0.020415792755036133, 'y': 0.02017599999999997}"}, {"{'x': 0.020445440831084127, 'y': 0.02017800000000003}"}, {"{'x': 0.020368312154079304, 'y': 0.020180000000000087}"}, {"{'x': 0.020395858981108406, 'y': 0.020182000000000033}"}, {"{'x': 0.020406632554717197, 'y': 0.02018399999999998}"}, {"{'x': 0.020435580214425375, 'y': 0.020186000000000037}"}, {"{'x': 0.02044495295535531, 'y': 0.020188000000000095}"}, {"{'x': 0.020385998364449875, 'y': 0.02019000000000004}"}, {"{'x': 0.02039747235439826, 'y': 0.020191999999999988}"}, {"{'x': 0.020425719597766845, 'y': 0.020194000000000045}"}, {"{'x': 0.020435792755036153, 'y': 0.020196000000000103}"}, {"{'x': 0.020465440831084036, 'y': 0.02019800000000005}"}, {"{'x': 0.020188312154079235, 'y': 0.020000000000000018}"}, {"{'x': 0.020215858981108337, 'y': 0.020001999999999964}"}, {"{'x': 0.02022663255471724, 'y': 0.02000399999999991}"}, {"{'x': 0.020255580214425306, 'y': 0.020005999999999968}"}, {"{'x': 0.020264952955355353, 'y': 0.020008000000000026}"}, {"{'x': 0.020205998364449806, 'y': 0.020009999999999972}"}, {"{'x': 0.02021747235439819, 'y': 0.02001199999999992}"}, {"{'x': 0.020245719597766776, 'y': 0.020013999999999976}"}, {"{'x': 0.020255792755036195, 'y': 0.020016000000000034}"}, {"{'x': 0.02028544083108419, 'y': 0.02001799999999998}"}, {"{'x': 0.020208312154079255, 'y': 0.020019999999999927}"}, {"{'x': 0.020235858981108246, 'y': 0.020021999999999984}"}, {"{'x': 0.020246632554717148, 'y': 0.020024000000000042}"}, {"{'x': 0.020275580214425437, 'y': 0.020025999999999988}"}, {"{'x': 0.020284952955355373, 'y': 0.020027999999999935}"}, {"{'x': 0.020225998364449937, 'y': 0.020029999999999992}"}, {"{'x': 0.02023747235439821, 'y': 0.02003200000000005}"}, {"{'x': 0.020265719597766907, 'y': 0.020033999999999996}"}, {"{'x': 0.020275792755036104, 'y': 0.020035999999999943}"}, {"{'x': 0.0203054408310841, 'y': 0.020038}"}, {"{'x': 0.020228312154079275, 'y': 0.020040000000000058}"}, {"{'x': 0.020255858981108377, 'y': 0.020042000000000004}"}, {"{'x': 0.020266632554717168, 'y': 0.02004399999999995}"}, {"{'x': 0.020295580214425346, 'y': 0.020046000000000008}"}, {"{'x': 0.020304952955355282, 'y': 0.020048000000000066}"}, {"{'x': 0.020245998364449846, 'y': 0.020050000000000012}"}, {"{'x': 0.02025747235439823, 'y': 0.02005199999999996}"}, {"{'x': 0.020285719597766816, 'y': 0.020054000000000016}"}, {"{'x': 0.020295792755036124, 'y': 0.020056000000000074}"}, {"{'x': 0.02032544083108423, 'y': 0.02005800000000002}"}, {"{'x': 0.020248312154079295, 'y': 0.020059999999999967}"}, {"{'x': 0.020275858981108286, 'y': 0.020062000000000024}"}, {"{'x': 0.020286632554717188, 'y': 0.020064000000000082}"}, {"{'x': 0.020315580214425477, 'y': 0.020066000000000028}"}, {"{'x': 0.020324952955355302, 'y': 0.020067999999999975}"}, {"{'x': 0.020265998364449755, 'y': 0.020070000000000032}"}, {"{'x': 0.02027747235439825, 'y': 0.02007200000000009}"}, {"{'x': 0.020305719597766947, 'y': 0.020074000000000036}"}, {"{'x': 0.020315792755036144, 'y': 0.020075999999999983}"}, {"{'x': 0.02034544083108414, 'y': 0.02007800000000004}"}, {"{'x': 0.020268312154079204, 'y': 0.020080000000000098}"}, {"{'x': 0.020295858981108417, 'y': 0.020082000000000044}"}, {"{'x': 0.020306632554717208, 'y': 0.02008399999999999}"}, {"{'x': 0.020335580214425386, 'y': 0.020086000000000048}"}, {"{'x': 0.020344952955355322, 'y': 0.020088000000000106}"}, {"{'x': 0.020285998364449886, 'y': 0.020090000000000052}"}, {"{'x': 0.02029747235439827, 'y': 0.020092}"}, {"{'x': 0.020325719597766856, 'y': 0.020094000000000056}"}, {"{'x': 0.020335792755036164, 'y': 0.020096000000000114}"}, {"{'x': 0.020365440831084047, 'y': 0.02009800000000006}"}, {"{'x': 0.020288312154079224, 'y': 0.020100000000000007}"}, {"{'x': 0.020315858981108326, 'y': 0.020102000000000064}"}, {"{'x': 0.020326632554717228, 'y': 0.020104000000000122}"}, {"{'x': 0.020355580214425295, 'y': 0.020106000000000068}"}, {"{'x': 0.020364952955355342, 'y': 0.020108000000000015}"}, {"{'x': 0.020305998364449795, 'y': 0.020110000000000072}"}, {"{'x': 0.02031747235439818, 'y': 0.02011200000000013}"}, {"{'x': 0.020345719597766765, 'y': 0.020113999999999965}"}, {"{'x': 0.020355792755036184, 'y': 0.020116000000000023}"}, {"{'x': 0.02038544083108418, 'y': 0.02011799999999997}"}, {"{'x': 0.020308312154079244, 'y': 0.020119999999999916}"}, {"{'x': 0.020335858981108457, 'y': 0.020121999999999973}"}, {"{'x': 0.020346632554717137, 'y': 0.02012400000000003}"}, {"{'x': 0.020375580214425426, 'y': 0.020125999999999977}"}, {"{'x': 0.020384952955355362, 'y': 0.020127999999999924}"}, {"{'x': 0.020325998364449926, 'y': 0.02012999999999998}"}, {"{'x': 0.0203374723543982, 'y': 0.02013200000000004}"}, {"{'x': 0.020365719597766896, 'y': 0.020133999999999985}"}, {"{'x': 0.020375792755036204, 'y': 0.02013599999999993}"}, {"{'x': 0.020405440831084087, 'y': 0.02013799999999999}"}, {"{'x': 0.020328312154079264, 'y': 0.020140000000000047}"}, {"{'x': 0.020355858981108366, 'y': 0.020141999999999993}"}, {"{'x': 0.020366632554717157, 'y': 0.02014399999999994}"}, {"{'x': 0.020395580214425335, 'y': 0.020145999999999997}"}, {"{'x': 0.020404952955355382, 'y': 0.020148000000000055}"}, {"{'x': 0.020345998364449835, 'y': 0.02015}"}, {"{'x': 0.02035747235439822, 'y': 0.020151999999999948}"}, {"{'x': 0.020385719597766805, 'y': 0.020154000000000005}"}, {"{'x': 0.020395792755036113, 'y': 0.020156000000000063}"}, {"{'x': 0.02042544083108422, 'y': 0.02015800000000001}"}, {"{'x': 0.020348312154079284, 'y': 0.020159999999999956}"}, {"{'x': 0.020375858981108275, 'y': 0.020162000000000013}"}, {"{'x': 0.020386632554717177, 'y': 0.02016400000000007}"}, {"{'x': 0.020415580214425466, 'y': 0.020166000000000017}"}, {"{'x': 0.02042495295535529, 'y': 0.020167999999999964}"}, {"{'x': 0.020365998364449744, 'y': 0.02017000000000002}"}, {"{'x': 0.02037747235439824, 'y': 0.02017200000000008}"}, {"{'x': 0.020405719597766936, 'y': 0.020174000000000025}"}, {"{'x': 0.020415792755036133, 'y': 0.02017599999999997}"}, {"{'x': 0.020445440831084127, 'y': 0.02017800000000003}"}, {"{'x': 0.020368312154079304, 'y': 0.020180000000000087}"}, {"{'x': 0.020395858981108406, 'y': 0.020182000000000033}"}, {"{'x': 0.020406632554717197, 'y': 0.02018399999999998}"}, {"{'x': 0.020435580214425375, 'y': 0.020186000000000037}"}, {"{'x': 0.02044495295535531, 'y': 0.020188000000000095}"}, {"{'x': 0.020385998364449875, 'y': 0.02019000000000004}"}, {"{'x': 0.02039747235439826, 'y': 0.020191999999999988}"}, {"{'x': 0.020425719597766845, 'y': 0.020194000000000045}"}, {"{'x': 0.020435792755036153, 'y': 0.020196000000000103}"}, {"{'x': 0.020465440831084036, 'y': 0.02019800000000005}"}, {"{'x': 0.020188312154079235, 'y': 0.020000000000000018}"}, {"{'x': 0.020215858981108337, 'y': 0.020001999999999964}"}, {"{'x': 0.02022663255471724, 'y': 0.02000399999999991}"}, {"{'x': 0.020255580214425306, 'y': 0.020005999999999968}"}, {"{'x': 0.020264952955355353, 'y': 0.020008000000000026}"}, {"{'x': 0.020205998364449806, 'y': 0.020009999999999972}"}, {"{'x': 0.02021747235439819, 'y': 0.02001199999999992}"}, {"{'x': 0.020245719597766776, 'y': 0.020013999999999976}"}, {"{'x': 0.020255792755036195, 'y': 0.020016000000000034}"}, {"{'x': 0.02028544083108419, 'y': 0.02001799999999998}"}, {"{'x': 0.020208312154079255, 'y': 0.020019999999999927}"}, {"{'x': 0.020235858981108246, 'y': 0.020021999999999984}"}, {"{'x': 0.020246632554717148, 'y': 0.020024000000000042}"}, {"{'x': 0.020275580214425437, 'y': 0.020025999999999988}"}, {"{'x': 0.020284952955355373, 'y': 0.020027999999999935}"}, {"{'x': 0.020225998364449937, 'y': 0.020029999999999992}"}, {"{'x': 0.02023747235439821, 'y': 0.02003200000000005}"}, {"{'x': 0.020265719597766907, 'y': 0.020033999999999996}"}, {"{'x': 0.020275792755036104, 'y': 0.020035999999999943}"}, {"{'x': 0.0203054408310841, 'y': 0.020038}"}, {"{'x': 0.020228312154079275, 'y': 0.020040000000000058}"}, {"{'x': 0.020255858981108377, 'y': 0.020042000000000004}"}, {"{'x': 0.020266632554717168, 'y': 0.02004399999999995}"}, {"{'x': 0.020295580214425346, 'y': 0.020046000000000008}"}, {"{'x': 0.020304952955355282, 'y': 0.020048000000000066}"}, {"{'x': 0.020245998364449846, 'y': 0.020050000000000012}"}, {"{'x': 0.02025747235439823, 'y': 0.02005199999999996}"}, {"{'x': 0.020285719597766816, 'y': 0.020054000000000016}"}, {"{'x': 0.020295792755036124, 'y': 0.020056000000000074}"}, {"{'x': 0.02032544083108423, 'y': 0.02005800000000002}"}, {"{'x': 0.020248312154079295, 'y': 0.020059999999999967}"}, {"{'x': 0.020275858981108286, 'y': 0.020062000000000024}"}, {"{'x': 0.020286632554717188, 'y': 0.020064000000000082}"}, {"{'x': 0.020315580214425477, 'y': 0.020066000000000028}"}, {"{'x': 0.020324952955355302, 'y': 0.020067999999999975}"}, {"{'x': 0.020265998364449755, 'y': 0.020070000000000032}"}, {"{'x': 0.02027747235439825, 'y': 0.02007200000000009}"}, {"{'x': 0.020305719597766947, 'y': 0.020074000000000036}"}, {"{'x': 0.020315792755036144, 'y': 0.020075999999999983}"}, {"{'x': 0.02034544083108414, 'y': 0.02007800000000004}"}, {"{'x': 0.020268312154079204, 'y': 0.020080000000000098}"}, {"{'x': 0.020295858981108417, 'y': 0.020082000000000044}"}, {"{'x': 0.020306632554717208, 'y': 0.02008399999999999}"}, {"{'x': 0.020335580214425386, 'y': 0.020086000000000048}"}, {"{'x': 0.020344952955355322, 'y': 0.020088000000000106}"}, {"{'x': 0.020285998364449886, 'y': 0.020090000000000052}"}, {"{'x': 0.02029747235439827, 'y': 0.020092}"}, {"{'x': 0.020325719597766856, 'y': 0.020094000000000056}"}, {"{'x': 0.020335792755036164, 'y': 0.020096000000000114}"}, {"{'x': 0.020365440831084047, 'y': 0.02009800000000006}"}, {"{'x': 0.020288312154079224, 'y': 0.020100000000000007}"}, {"{'x': 0.020315858981108326, 'y': 0.020102000000000064}"}, {"{'x': 0.020326632554717228, 'y': 0.020104000000000122}"}, {"{'x': 0.020355580214425295, 'y': 0.020106000000000068}"}, {"{'x': 0.020364952955355342, 'y': 0.020108000000000015}"}, {"{'x': 0.020305998364449795, 'y': 0.020110000000000072}"}, {"{'x': 0.02031747235439818, 'y': 0.02011200000000013}"}, {"{'x': 0.020345719597766765, 'y': 0.020113999999999965}"}, {"{'x': 0.020355792755036184, 'y': 0.020116000000000023}"}, {"{'x': 0.02038544083108418, 'y': 0.02011799999999997}"}, {"{'x': 0.020308312154079244, 'y': 0.020119999999999916}"}, {"{'x': 0.020335858981108457, 'y': 0.020121999999999973}"}, {"{'x': 0.020346632554717137, 'y': 0.02012400000000003}"}, {"{'x': 0.020375580214425426, 'y': 0.020125999999999977}"}, {"{'x': 0.020384952955355362, 'y': 0.020127999999999924}"}, {"{'x': 0.020325998364449926, 'y': 0.02012999999999998}"}, {"{'x': 0.0203374723543982, 'y': 0.02013200000000004}"}, {"{'x': 0.020365719597766896, 'y': 0.020133999999999985}"}, {"{'x': 0.020375792755036204, 'y': 0.02013599999999993}"}, {"{'x': 0.020405440831084087, 'y': 0.02013799999999999}"}, {"{'x': 0.020328312154079264, 'y': 0.020140000000000047}"}, {"{'x': 0.020355858981108366, 'y': 0.020141999999999993}"}, {"{'x': 0.020366632554717157, 'y': 0.02014399999999994}"}, {"{'x': 0.020395580214425335, 'y': 0.020145999999999997}"}, {"{'x': 0.020404952955355382, 'y': 0.020148000000000055}"}, {"{'x': 0.020345998364449835, 'y': 0.02015}"}, {"{'x': 0.02035747235439822, 'y': 0.020151999999999948}"}, {"{'x': 0.020385719597766805, 'y': 0.020154000000000005}"}, {"{'x': 0.020395792755036113, 'y': 0.020156000000000063}"}, {"{'x': 0.02042544083108422, 'y': 0.02015800000000001}"}, {"{'x': 0.020348312154079284, 'y': 0.020159999999999956}"}, {"{'x': 0.020375858981108275, 'y': 0.020162000000000013}"}, {"{'x': 0.020386632554717177, 'y': 0.02016400000000007}"}, {"{'x': 0.020415580214425466, 'y': 0.020166000000000017}"}, {"{'x': 0.02042495295535529, 'y': 0.020167999999999964}"}, {"{'x': 0.020365998364449744, 'y': 0.02017000000000002}"}, {"{'x': 0.02037747235439824, 'y': 0.02017200000000008}"}, {"{'x': 0.020405719597766936, 'y': 0.020174000000000025}"}, {"{'x': 0.020415792755036133, 'y': 0.02017599999999997}"}, {"{'x': 0.020445440831084127, 'y': 0.02017800000000003}"}, {"{'x': 0.020368312154079304, 'y': 0.020180000000000087}"}, {"{'x': 0.020395858981108406, 'y': 0.020182000000000033}"}, {"{'x': 0.020406632554717197, 'y': 0.02018399999999998}"}, {"{'x': 0.020435580214425375, 'y': 0.020186000000000037}"}, {"{'x': 0.02044495295535531, 'y': 0.020188000000000095}"}, {"{'x': 0.020385998364449875, 'y': 0.02019000000000004}"}, {"{'x': 0.02039747235439826, 'y': 0.020191999999999988}"}, {"{'x': 0.020425719597766845, 'y': 0.020194000000000045}"}, {"{'x': 0.020435792755036153, 'y': 0.020196000000000103}"}, {"{'x': 0.020465440831084036, 'y': 0.02019800000000005}"}, {"{'x': 0.020188312154079235, 'y': 0.020000000000000018}"}, {"{'x': 0.020215858981108337, 'y': 0.020001999999999964}"}, {"{'x': 0.02022663255471724, 'y': 0.02000399999999991}"}, {"{'x': 0.020255580214425306, 'y': 0.020005999999999968}"}, {"{'x': 0.020264952955355353, 'y': 0.020008000000000026}"}, {"{'x': 0.020205998364449806, 'y': 0.020009999999999972}"}, {"{'x': 0.02021747235439819, 'y': 0.02001199999999992}"}, {"{'x': 0.020245719597766776, 'y': 0.020013999999999976}"}, {"{'x': 0.020255792755036195, 'y': 0.020016000000000034}"}, {"{'x': 0.02028544083108419, 'y': 0.02001799999999998}"}, {"{'x': 0.020208312154079255, 'y': 0.020019999999999927}"}, {"{'x': 0.020235858981108246, 'y': 0.020021999999999984}"}, {"{'x': 0.020246632554717148, 'y': 0.020024000000000042}"}, {"{'x': 0.020275580214425437, 'y': 0.020025999999999988}"}, {"{'x': 0.020284952955355373, 'y': 0.020027999999999935}"}, {"{'x': 0.020225998364449937, 'y': 0.020029999999999992}"}, {"{'x': 0.02023747235439821, 'y': 0.02003200000000005}"}, {"{'x': 0.020265719597766907, 'y': 0.020033999999999996}"}, {"{'x': 0.020275792755036104, 'y': 0.020035999999999943}"}, {"{'x': 0.0203054408310841, 'y': 0.020038}"}, {"{'x': 0.020228312154079275, 'y': 0.020040000000000058}"}, {"{'x': 0.020255858981108377, 'y': 0.020042000000000004}"}, {"{'x': 0.020266632554717168, 'y': 0.02004399999999995}"}, {"{'x': 0.020295580214425346, 'y': 0.020046000000000008}"}, {"{'x': 0.020304952955355282, 'y': 0.020048000000000066}"}, {"{'x': 0.020245998364449846, 'y': 0.020050000000000012}"}, {"{'x': 0.02025747235439823, 'y': 0.02005199999999996}"}, {"{'x': 0.020285719597766816, 'y': 0.020054000000000016}"}, {"{'x': 0.020295792755036124, 'y': 0.020056000000000074}"}, {"{'x': 0.02032544083108423, 'y': 0.02005800000000002}"}, {"{'x': 0.020248312154079295, 'y': 0.020059999999999967}"}, {"{'x': 0.020275858981108286, 'y': 0.020062000000000024}"}, {"{'x': 0.020286632554717188, 'y': 0.020064000000000082}"}, {"{'x': 0.020315580214425477, 'y': 0.020066000000000028}"}, {"{'x': 0.020324952955355302, 'y': 0.020067999999999975}"}, {"{'x': 0.020265998364449755, 'y': 0.020070000000000032}"}, {"{'x': 0.02027747235439825, 'y': 0.02007200000000009}"}, {"{'x': 0.020305719597766947, 'y': 0.020074000000000036}"}, {"{'x': 0.020315792755036144, 'y': 0.020075999999999983}"}, {"{'x': 0.02034544083108414, 'y': 0.02007800000000004}"}, {"{'x': 0.020268312154079204, 'y': 0.020080000000000098}"}, {"{'x': 0.020295858981108417, 'y': 0.020082000000000044}"}, {"{'x': 0.020306632554717208, 'y': 0.02008399999999999}"}, {"{'x': 0.020335580214425386, 'y': 0.020086000000000048}"}, {"{'x': 0.020344952955355322, 'y': 0.020088000000000106}"}, {"{'x': 0.020285998364449886, 'y': 0.020090000000000052}"}, {"{'x': 0.02029747235439827, 'y': 0.020092}"}, {"{'x': 0.020325719597766856, 'y': 0.020094000000000056}"}, {"{'x': 0.020335792755036164, 'y': 0.020096000000000114}"}, {"{'x': 0.020365440831084047, 'y': 0.02009800000000006}"}, {"{'x': 0.020288312154079224, 'y': 0.020100000000000007}"}, {"{'x': 0.020315858981108326, 'y': 0.020102000000000064}"}, {"{'x': 0.020326632554717228, 'y': 0.020104000000000122}"}, {"{'x': 0.020355580214425295, 'y': 0.020106000000000068}"}, {"{'x': 0.020364952955355342, 'y': 0.020108000000000015}"}, {"{'x': 0.020305998364449795, 'y': 0.020110000000000072}"}, {"{'x': 0.02031747235439818, 'y': 0.02011200000000013}"}, {"{'x': 0.020345719597766765, 'y': 0.020113999999999965}"}, {"{'x': 0.020355792755036184, 'y': 0.020116000000000023}"}, {"{'x': 0.02038544083108418, 'y': 0.02011799999999997}"}, {"{'x': 0.020308312154079244, 'y': 0.020119999999999916}"}, {"{'x': 0.020335858981108457, 'y': 0.020121999999999973}"}, {"{'x': 0.020346632554717137, 'y': 0.02012400000000003}"}, {"{'x': 0.020375580214425426, 'y': 0.020125999999999977}"}, {"{'x': 0.020384952955355362, 'y': 0.020127999999999924}"}, {"{'x': 0.020325998364449926, 'y': 0.02012999999999998}"}, {"{'x': 0.0203374723543982, 'y': 0.02013200000000004}"}, {"{'x': 0.020365719597766896, 'y': 0.020133999999999985}"}, {"{'x': 0.020375792755036204, 'y': 0.02013599999999993}"}, {"{'x': 0.020405440831084087, 'y': 0.02013799999999999}"}, {"{'x': 0.020328312154079264, 'y': 0.020140000000000047}"}, {"{'x': 0.020355858981108366, 'y': 0.020141999999999993}"}, {"{'x': 0.020366632554717157, 'y': 0.02014399999999994}"}, {"{'x': 0.020395580214425335, 'y': 0.020145999999999997}"}, {"{'x': 0.020404952955355382, 'y': 0.020148000000000055}"}, {"{'x': 0.020345998364449835, 'y': 0.02015}"}, {"{'x': 0.02035747235439822, 'y': 0.020151999999999948}"}, {"{'x': 0.020385719597766805, 'y': 0.020154000000000005}"}, {"{'x': 0.020395792755036113, 'y': 0.020156000000000063}"}, {"{'x': 0.02042544083108422, 'y': 0.02015800000000001}"}, {"{'x': 0.020348312154079284, 'y': 0.020159999999999956}"}, {"{'x': 0.020375858981108275, 'y': 0.020162000000000013}"}, {"{'x': 0.020386632554717177, 'y': 0.02016400000000007}"}, {"{'x': 0.020415580214425466, 'y': 0.020166000000000017}"}, {"{'x': 0.02042495295535529, 'y': 0.020167999999999964}"}, {"{'x': 0.020365998364449744, 'y': 0.02017000000000002}"}, {"{'x': 0.02037747235439824, 'y': 0.02017200000000008}"}, {"{'x': 0.020405719597766936, 'y': 0.020174000000000025}"}, {"{'x': 0.020415792755036133, 'y': 0.02017599999999997}"}, {"{'x': 0.020445440831084127, 'y': 0.02017800000000003}"}, {"{'x': 0.020368312154079304, 'y': 0.020180000000000087}"}, {"{'x': 0.020395858981108406, 'y': 0.020182000000000033}"}, {"{'x': 0.020406632554717197, 'y': 0.02018399999999998}"}, {"{'x': 0.020435580214425375, 'y': 0.020186000000000037}"}, {"{'x': 0.02044495295535531, 'y': 0.020188000000000095}"}, {"{'x': 0.020385998364449875, 'y': 0.02019000000000004}"}, {"{'x': 0.02039747235439826, 'y': 0.020191999999999988}"}, {"{'x': 0.020425719597766845, 'y': 0.020194000000000045}"}, {"{'x': 0.020435792755036153, 'y': 0.020196000000000103}"}, {"{'x': 0.020465440831084036, 'y': 0.02019800000000005}"}, {"{'x': 0.020188312154079235, 'y': 0.020000000000000018}"}, {"{'x': 0.020215858981108337, 'y': 0.020001999999999964}"}, {"{'x': 0.02022663255471724, 'y': 0.02000399999999991}"}, {"{'x': 0.020255580214425306, 'y': 0.020005999999999968}"}, {"{'x': 0.020264952955355353, 'y': 0.020008000000000026}"}, {"{'x': 0.020205998364449806, 'y': 0.020009999999999972}"}, {"{'x': 0.02021747235439819, 'y': 0.02001199999999992}"}, {"{'x': 0.020245719597766776, 'y': 0.020013999999999976}"}, {"{'x': 0.020255792755036195, 'y': 0.020016000000000034}"}, {"{'x': 0.02028544083108419, 'y': 0.02001799999999998}"}, {"{'x': 0.020208312154079255, 'y': 0.020019999999999927}"}, {"{'x': 0.020235858981108246, 'y': 0.020021999999999984}"}, {"{'x': 0.020246632554717148, 'y': 0.020024000000000042}"}, {"{'x': 0.020275580214425437, 'y': 0.020025999999999988}"}, {"{'x': 0.020284952955355373, 'y': 0.020027999999999935}"}, {"{'x': 0.020225998364449937, 'y': 0.020029999999999992}"}, {"{'x': 0.02023747235439821, 'y': 0.02003200000000005}"}, {"{'x': 0.020265719597766907, 'y': 0.020033999999999996}"}, {"{'x': 0.020275792755036104, 'y': 0.020035999999999943}"}, {"{'x': 0.0203054408310841, 'y': 0.020038}"}, {"{'x': 0.020228312154079275, 'y': 0.020040000000000058}"}, {"{'x': 0.020255858981108377, 'y': 0.020042000000000004}"}, {"{'x': 0.020266632554717168, 'y': 0.02004399999999995}"}, {"{'x': 0.020295580214425346, 'y': 0.020046000000000008}"}, {"{'x': 0.020304952955355282, 'y': 0.020048000000000066}"}, {"{'x': 0.020245998364449846, 'y': 0.020050000000000012}"}, {"{'x': 0.02025747235439823, 'y': 0.02005199999999996}"}, {"{'x': 0.020285719597766816, 'y': 0.020054000000000016}"}, {"{'x': 0.020295792755036124, 'y': 0.020056000000000074}"}, {"{'x': 0.02032544083108423, 'y': 0.02005800000000002}"}, {"{'x': 0.020248312154079295, 'y': 0.020059999999999967}"}, {"{'x': 0.020275858981108286, 'y': 0.020062000000000024}"}, {"{'x': 0.020286632554717188, 'y': 0.020064000000000082}"}, {"{'x': 0.020315580214425477, 'y': 0.020066000000000028}"}, {"{'x': 0.020324952955355302, 'y': 0.020067999999999975}"}, {"{'x': 0.020265998364449755, 'y': 0.020070000000000032}"}, {"{'x': 0.02027747235439825, 'y': 0.02007200000000009}"}, {"{'x': 0.020305719597766947, 'y': 0.020074000000000036}"}, {"{'x': 0.020315792755036144, 'y': 0.020075999999999983}"}, {"{'x': 0.02034544083108414, 'y': 0.02007800000000004}"}, {"{'x': 0.020268312154079204, 'y': 0.020080000000000098}"}, {"{'x': 0.020295858981108417, 'y': 0.020082000000000044}"}, {"{'x': 0.020306632554717208, 'y': 0.02008399999999999}"}, {"{'x': 0.020335580214425386, 'y': 0.020086000000000048}"}],
+                    backgroundColor: 'rgba(46, 134, 171, 0.6)',
+                    borderColor: 'rgba(46, 134, 171, 1)',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'MAE vs MFE Distribution'
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'MAE (bp)'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'MFE (bp)'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Risk Metrics Chart
+        const riskCtx = document.getElementById('riskChart').getContext('2d');
+        new Chart(riskCtx, {
+            type: 'radar',
+            data: {
+                labels: ['Sharpe Ratio', 'Sortino Ratio', 'Calmar Ratio', 'Omega Ratio', 'K-Factor'],
+                datasets: [{
+                    label: 'Performance Metrics',
+                    data: [-11.41, -11.24, -0.16, 0.03, -48.80],
+                    backgroundColor: 'rgba(162, 59, 114, 0.2)',
+                    borderColor: 'rgba(162, 59, 114, 1)',
+                    pointBackgroundColor: 'rgba(162, 59, 114, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(162, 59, 114, 1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Risk-Adjusted Performance Radar'
+                    }
+                },
+                scales: {
+                    r: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // Trade Distribution Chart
+        const tradeDistCtx = document.getElementById('tradeDistChart').getContext('2d');
+        const pnlBuckets = {
+            'Large Loss (< -100bp)': 51,
+            'Loss (-100 to 0bp)': 1230,
+            'Small Win (0 to 50bp)': 293,
+            'Good Win (50 to 200bp)': 0,
+            'Large Win (> 200bp)': 0
+        };
+        
+        new Chart(tradeDistCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(pnlBuckets),
+                datasets: [{
+                    data: Object.values(pnlBuckets),
+                    backgroundColor: [
+                        '#C73E1D',
+                        '#F18F01', 
+                        '#A23B72',
+                        '#2E86AB',
+                        '#10B981'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'P&L Distribution'
+                    },
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+        </script>
+        
+</body>
+</html>
+        
