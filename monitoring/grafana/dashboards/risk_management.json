@@ -1,0 +1,663 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "VelocityPTrader Risk Management - Drawdown, VaR, Exposure & Risk Metrics",
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "panels": [],
+      "title": "Account Status",
+      "type": "row"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "#F2495C", "value": null },
+              { "color": "#FF9830", "value": 8000 },
+              { "color": "#73BF69", "value": 10000 }
+            ]
+          },
+          "unit": "currencyUSD"
+        }
+      },
+      "gridPos": { "h": 5, "w": 6, "x": 0, "y": 1 },
+      "id": 1,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "expr": "velocitytrader_account_balance",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Account Balance",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "#F2495C", "value": null },
+              { "color": "#FF9830", "value": 8000 },
+              { "color": "#73BF69", "value": 10000 }
+            ]
+          },
+          "unit": "currencyUSD"
+        }
+      },
+      "gridPos": { "h": 5, "w": 6, "x": 6, "y": 1 },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "expr": "velocitytrader_account_equity",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Account Equity",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "#73BF69", "value": null },
+              { "color": "#FF9830", "value": 10 },
+              { "color": "#F2495C", "value": 20 }
+            ]
+          },
+          "unit": "percent"
+        }
+      },
+      "gridPos": { "h": 5, "w": 4, "x": 12, "y": 1 },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "expr": "velocitytrader_max_drawdown",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Max Drawdown",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "#73BF69", "value": null },
+              { "color": "#FF9830", "value": 5 },
+              { "color": "#F2495C", "value": 10 }
+            ]
+          },
+          "unit": "percent"
+        }
+      },
+      "gridPos": { "h": 5, "w": 4, "x": 16, "y": 1 },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "expr": "velocitytrader_current_drawdown",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Current Drawdown",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "#73BF69", "value": null },
+              { "color": "#FF9830", "value": 50 },
+              { "color": "#F2495C", "value": 75 }
+            ]
+          },
+          "unit": "percent"
+        }
+      },
+      "gridPos": { "h": 5, "w": 4, "x": 20, "y": 1 },
+      "id": 5,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "expr": "velocitytrader_risk_exposure",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Risk Exposure",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 6 },
+      "id": 101,
+      "panels": [],
+      "title": "Drawdown Analysis",
+      "type": "row"
+    },
+    {
+      "datasource": "Prometheus",
+      "description": "Equity curve and drawdown visualization",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "opacity",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "green", "value": null }]
+          },
+          "unit": "currencyUSD"
+        }
+      },
+      "gridPos": { "h": 8, "w": 16, "x": 0, "y": 7 },
+      "id": 6,
+      "options": {
+        "legend": { "calcs": ["mean", "max", "last"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      },
+      "targets": [
+        {
+          "expr": "velocitytrader_account_equity",
+          "legendFormat": "Equity",
+          "refId": "A"
+        },
+        {
+          "expr": "velocitytrader_account_balance",
+          "legendFormat": "Balance",
+          "refId": "B"
+        }
+      ],
+      "title": "Equity Curve",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "max": 30,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "#73BF69", "value": null },
+              { "color": "#FF9830", "value": 10 },
+              { "color": "#F2495C", "value": 20 }
+            ]
+          },
+          "unit": "percent"
+        }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 7 },
+      "id": 7,
+      "options": {
+        "orientation": "vertical",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true
+      },
+      "targets": [
+        {
+          "expr": "velocitytrader_max_drawdown",
+          "legendFormat": "Max DD",
+          "refId": "A"
+        },
+        {
+          "expr": "velocitytrader_current_drawdown",
+          "legendFormat": "Current DD",
+          "refId": "B"
+        }
+      ],
+      "title": "Drawdown Gauges",
+      "type": "gauge"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 15 },
+      "id": 102,
+      "panels": [],
+      "title": "Risk-Adjusted Returns",
+      "type": "row"
+    },
+    {
+      "datasource": "Prometheus",
+      "description": "Sharpe Ratio: Risk-adjusted return (excess return / volatility)",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "max": 3,
+          "min": -1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "#F2495C", "value": null },
+              { "color": "#FF9830", "value": 0 },
+              { "color": "#FADE2A", "value": 1 },
+              { "color": "#73BF69", "value": 2 }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 16 },
+      "id": 8,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "targets": [
+        {
+          "expr": "velocitytrader_sharpe_ratio",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Sharpe Ratio",
+      "type": "gauge"
+    },
+    {
+      "datasource": "Prometheus",
+      "description": "Sortino Ratio: Downside risk-adjusted return",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "max": 5,
+          "min": -1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "#F2495C", "value": null },
+              { "color": "#FF9830", "value": 0 },
+              { "color": "#FADE2A", "value": 1 },
+              { "color": "#73BF69", "value": 2 }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 16 },
+      "id": 9,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "targets": [
+        {
+          "expr": "velocitytrader_sortino_ratio",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Sortino Ratio",
+      "type": "gauge"
+    },
+    {
+      "datasource": "Prometheus",
+      "description": "Calmar Ratio: Annual return / Max drawdown",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "max": 5,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "#F2495C", "value": null },
+              { "color": "#FF9830", "value": 1 },
+              { "color": "#FADE2A", "value": 2 },
+              { "color": "#73BF69", "value": 3 }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 16 },
+      "id": 10,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "targets": [
+        {
+          "expr": "velocitytrader_calmar_ratio",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Calmar Ratio",
+      "type": "gauge"
+    },
+    {
+      "datasource": "Prometheus",
+      "description": "Recovery Factor: Net profit / Max drawdown",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "max": 10,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "#F2495C", "value": null },
+              { "color": "#FF9830", "value": 1 },
+              { "color": "#FADE2A", "value": 3 },
+              { "color": "#73BF69", "value": 5 }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 16 },
+      "id": 11,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "targets": [
+        {
+          "expr": "velocitytrader_recovery_factor",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Recovery Factor",
+      "type": "gauge"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 22 },
+      "id": 103,
+      "panels": [],
+      "title": "Risk Statistics",
+      "type": "row"
+    },
+    {
+      "datasource": "Prometheus",
+      "description": "Value at Risk (95% confidence level)",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "#73BF69", "value": null },
+              { "color": "#FF9830", "value": 200 },
+              { "color": "#F2495C", "value": 500 }
+            ]
+          },
+          "unit": "currencyUSD"
+        }
+      },
+      "gridPos": { "h": 5, "w": 4, "x": 0, "y": 23 },
+      "id": 12,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "expr": "velocitytrader_var_95",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "VaR (95%)",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "#73BF69", "value": null }]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": { "h": 5, "w": 4, "x": 4, "y": 23 },
+      "id": 13,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "expr": "velocitytrader_consecutive_wins_max",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Max Consecutive Wins",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "#73BF69", "value": null },
+              { "color": "#FF9830", "value": 5 },
+              { "color": "#F2495C", "value": 10 }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": { "h": 5, "w": 4, "x": 8, "y": 23 },
+      "id": 14,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "expr": "velocitytrader_consecutive_losses_max",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Max Consecutive Losses",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "opacity",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "#73BF69", "value": null },
+              { "color": "#F2495C", "value": 10 }
+            ]
+          },
+          "unit": "percent"
+        }
+      },
+      "gridPos": { "h": 5, "w": 12, "x": 12, "y": 23 },
+      "id": 15,
+      "options": {
+        "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "right" },
+        "tooltip": { "mode": "multi" }
+      },
+      "targets": [
+        {
+          "expr": "velocitytrader_current_drawdown",
+          "legendFormat": "Current DD",
+          "refId": "A"
+        },
+        {
+          "expr": "velocitytrader_max_drawdown",
+          "legendFormat": "Max DD",
+          "refId": "B"
+        }
+      ],
+      "title": "Drawdown Over Time",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 30,
+  "style": "dark",
+  "tags": ["velocitytrader", "risk", "drawdown", "var"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "VelocityPTrader - Risk Management",
+  "uid": "velocitytrader-risk",
+  "version": 1
+}

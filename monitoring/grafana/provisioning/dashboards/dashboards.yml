@@ -1,0 +1,14 @@
+# VelocityPTrader Grafana Dashboard Provisioning
+apiVersion: 1
+
+providers:
+  - name: 'VelocityPTrader Dashboards'
+    orgId: 1
+    folder: 'VelocityPTrader'
+    folderUid: 'velocitytrader'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards
