@@ -1,0 +1,100 @@
+{
+  "uid": "portfolio-risk-overview",
+  "title": "Portfolio & Risk Overview",
+  "tags": ["trading", "rl", "risk"],
+  "timezone": "browser",
+  "editable": true,
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Equity Curve",
+      "gridPos": {"x": 0, "y": 0, "w": 24, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "velocitytrader_account_equity", "legendFormat": "Equity", "refId": "A"},
+        {"expr": "velocitytrader_account_balance", "legendFormat": "Cash Balance", "refId": "B"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "currencyUSD", "color": {"mode": "palette-classic"}}}
+    },
+    {
+      "type": "gauge",
+      "title": "Maximum Draw-Down (%)",
+      "gridPos": {"x": 0, "y": 8, "w": 8, "h": 6},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_max_drawdown", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 50, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 10}, {"color": "red", "value": 20}]}}}
+    },
+    {
+      "type": "gauge",
+      "title": "Current Draw-Down (%)",
+      "gridPos": {"x": 8, "y": 8, "w": 8, "h": 6},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_current_drawdown", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 30, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 5}, {"color": "red", "value": 10}]}}}
+    },
+    {
+      "type": "gauge",
+      "title": "Risk Exposure (%)",
+      "gridPos": {"x": 16, "y": 8, "w": 8, "h": 6},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_risk_exposure", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 50}, {"color": "red", "value": 75}]}}}
+    },
+    {
+      "type": "piechart",
+      "title": "Exposure by Symbol",
+      "gridPos": {"x": 0, "y": 14, "w": 12, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_symbol_trades_total", "legendFormat": "{{symbol}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "none"}},
+      "options": {"legend": {"displayMode": "table", "placement": "right"}, "pieType": "donut"}
+    },
+    {
+      "type": "timeseries",
+      "title": "Risk Metrics Over Time",
+      "gridPos": {"x": 12, "y": 14, "w": 12, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "velocitytrader_max_drawdown", "legendFormat": "Max Drawdown", "refId": "D"},
+        {"expr": "velocitytrader_var_95 / 100", "legendFormat": "VaR Proxy", "refId": "V"},
+        {"expr": "velocitytrader_current_drawdown", "legendFormat": "Current DD", "refId": "C"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "percent"}}
+    },
+    {
+      "type": "stat",
+      "title": "Sharpe Ratio",
+      "gridPos": {"x": 0, "y": 22, "w": 6, "h": 4},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_sharpe_ratio", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "none", "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "orange", "value": 0}, {"color": "green", "value": 1}]}}}
+    },
+    {
+      "type": "stat",
+      "title": "Sortino Ratio",
+      "gridPos": {"x": 6, "y": 22, "w": 6, "h": 4},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_sortino_ratio", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "none", "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "orange", "value": 0}, {"color": "green", "value": 1.5}]}}}
+    },
+    {
+      "type": "stat",
+      "title": "Calmar Ratio",
+      "gridPos": {"x": 12, "y": 22, "w": 6, "h": 4},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_calmar_ratio", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "none", "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "orange", "value": 1}, {"color": "green", "value": 2}]}}}
+    },
+    {
+      "type": "stat",
+      "title": "Recovery Factor",
+      "gridPos": {"x": 18, "y": 22, "w": 6, "h": 4},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_recovery_factor", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "none", "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "orange", "value": 1}, {"color": "green", "value": 3}]}}}
+    }
+  ],
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "5s"
+}

@@ -1,0 +1,173 @@
+{
+  "uid": "agent-performance-rl",
+  "title": "Agent Performance & RL",
+  "tags": ["trading", "rl", "agents"],
+  "timezone": "browser",
+  "editable": true,
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Cumulative Reward: BERSERKER vs SNIPER",
+      "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "velocitytrader_agent_cumulative_reward{agent=\"BERSERKER\"}", "legendFormat": "BERSERKER", "refId": "B"},
+        {"expr": "velocitytrader_agent_cumulative_reward{agent=\"SNIPER\"}", "legendFormat": "SNIPER", "refId": "S"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "none", "custom": {"fillOpacity": 10, "lineWidth": 2}}}
+    },
+    {
+      "type": "timeseries",
+      "title": "Episode Reward Comparison",
+      "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "velocitytrader_agent_episode_reward{agent=\"BERSERKER\"}", "legendFormat": "BERSERKER Episode", "refId": "BE"},
+        {"expr": "velocitytrader_agent_episode_reward{agent=\"SNIPER\"}", "legendFormat": "SNIPER Episode", "refId": "SE"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "none", "custom": {"drawStyle": "bars", "barAlignment": 0}}}
+    },
+    {
+      "type": "gauge",
+      "title": "BERSERKER Win Rate",
+      "gridPos": {"x": 0, "y": 8, "w": 6, "h": 5},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_agent_win_rate{agent=\"BERSERKER\"}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "orange", "value": 40}, {"color": "yellow", "value": 50}, {"color": "green", "value": 55}]}}}
+    },
+    {
+      "type": "gauge",
+      "title": "SNIPER Win Rate",
+      "gridPos": {"x": 6, "y": 8, "w": 6, "h": 5},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_agent_win_rate{agent=\"SNIPER\"}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "orange", "value": 40}, {"color": "yellow", "value": 50}, {"color": "green", "value": 55}]}}}
+    },
+    {
+      "type": "gauge",
+      "title": "BERSERKER Confidence",
+      "gridPos": {"x": 12, "y": 8, "w": 6, "h": 5},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_agent_confidence{agent=\"BERSERKER\"}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "yellow", "value": 50}, {"color": "green", "value": 75}]}}}
+    },
+    {
+      "type": "gauge",
+      "title": "SNIPER Confidence",
+      "gridPos": {"x": 18, "y": 8, "w": 6, "h": 5},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_agent_confidence{agent=\"SNIPER\"}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "yellow", "value": 50}, {"color": "green", "value": 75}]}}}
+    },
+    {
+      "type": "piechart",
+      "title": "Win Rate by Regime (BERSERKER)",
+      "gridPos": {"x": 0, "y": 13, "w": 6, "h": 6},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "velocitytrader_agent_regime_wins{agent=\"BERSERKER\", regime=\"CHAOTIC\"}", "legendFormat": "Chaotic", "refId": "C"},
+        {"expr": "velocitytrader_agent_regime_wins{agent=\"BERSERKER\", regime=\"UNDERDAMPED\"}", "legendFormat": "Underdamped", "refId": "U"},
+        {"expr": "velocitytrader_agent_regime_wins{agent=\"BERSERKER\", regime=\"CRITICALLY_DAMPED\"}", "legendFormat": "Critical", "refId": "R"},
+        {"expr": "velocitytrader_agent_regime_wins{agent=\"BERSERKER\", regime=\"OVERDAMPED\"}", "legendFormat": "Overdamped", "refId": "O"}
+      ],
+      "options": {"pieType": "donut", "legend": {"placement": "right"}}
+    },
+    {
+      "type": "piechart",
+      "title": "Win Rate by Regime (SNIPER)",
+      "gridPos": {"x": 6, "y": 13, "w": 6, "h": 6},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "velocitytrader_agent_regime_wins{agent=\"SNIPER\", regime=\"CHAOTIC\"}", "legendFormat": "Chaotic", "refId": "C"},
+        {"expr": "velocitytrader_agent_regime_wins{agent=\"SNIPER\", regime=\"UNDERDAMPED\"}", "legendFormat": "Underdamped", "refId": "U"},
+        {"expr": "velocitytrader_agent_regime_wins{agent=\"SNIPER\", regime=\"CRITICALLY_DAMPED\"}", "legendFormat": "Critical", "refId": "R"},
+        {"expr": "velocitytrader_agent_regime_wins{agent=\"SNIPER\", regime=\"OVERDAMPED\"}", "legendFormat": "Overdamped", "refId": "O"}
+      ],
+      "options": {"pieType": "donut", "legend": {"placement": "right"}}
+    },
+    {
+      "type": "timeseries",
+      "title": "Exploration Rate (Epsilon)",
+      "gridPos": {"x": 12, "y": 13, "w": 12, "h": 6},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "velocitytrader_rl_exploration_rate{agent=\"BERSERKER\"}", "legendFormat": "BERSERKER Epsilon", "refId": "BE"},
+        {"expr": "velocitytrader_rl_exploration_rate{agent=\"SNIPER\"}", "legendFormat": "SNIPER Epsilon", "refId": "SE"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100, "custom": {"lineWidth": 2}}}
+    },
+    {
+      "type": "timeseries",
+      "title": "RL Loss (Training Progress)",
+      "gridPos": {"x": 0, "y": 19, "w": 12, "h": 6},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "velocitytrader_rl_loss{agent=\"BERSERKER\"}", "legendFormat": "BERSERKER Loss", "refId": "BL"},
+        {"expr": "velocitytrader_rl_loss{agent=\"SNIPER\"}", "legendFormat": "SNIPER Loss", "refId": "SL"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "none", "custom": {"fillOpacity": 5}}}
+    },
+    {
+      "type": "timeseries",
+      "title": "Q-Value Estimates",
+      "gridPos": {"x": 12, "y": 19, "w": 12, "h": 6},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "velocitytrader_rl_q_value{agent=\"BERSERKER\"}", "legendFormat": "BERSERKER Q-val", "refId": "BQ"},
+        {"expr": "velocitytrader_rl_q_value{agent=\"SNIPER\"}", "legendFormat": "SNIPER Q-val", "refId": "SQ"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "none"}}
+    },
+    {
+      "type": "stat",
+      "title": "BERSERKER Total Trades",
+      "gridPos": {"x": 0, "y": 25, "w": 4, "h": 3},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_agent_trades_total{agent=\"BERSERKER\"}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "short"}}
+    },
+    {
+      "type": "stat",
+      "title": "SNIPER Total Trades",
+      "gridPos": {"x": 4, "y": 25, "w": 4, "h": 3},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_agent_trades_total{agent=\"SNIPER\"}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "short"}}
+    },
+    {
+      "type": "stat",
+      "title": "BERSERKER P&L",
+      "gridPos": {"x": 8, "y": 25, "w": 4, "h": 3},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_agent_pnl_total{agent=\"BERSERKER\"}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "currencyUSD", "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 0}]}}}
+    },
+    {
+      "type": "stat",
+      "title": "SNIPER P&L",
+      "gridPos": {"x": 12, "y": 25, "w": 4, "h": 3},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_agent_pnl_total{agent=\"SNIPER\"}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "currencyUSD", "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 0}]}}}
+    },
+    {
+      "type": "stat",
+      "title": "Learning Episodes",
+      "gridPos": {"x": 16, "y": 25, "w": 4, "h": 3},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_rl_episodes_total", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "short"}}
+    },
+    {
+      "type": "stat",
+      "title": "Model Updates",
+      "gridPos": {"x": 20, "y": 25, "w": 4, "h": 3},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_rl_model_updates_total", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "short"}}
+    }
+  ],
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "5s"
+}
