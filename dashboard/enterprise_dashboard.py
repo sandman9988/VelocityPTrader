@@ -276,21 +276,24 @@ class ConnectionManager:
         self.connection_metadata: Dict[str, Dict] = {}
         self._lock = threading.RLock()
         
-    async def connect(self, websocket: WebSocket, session_id: str, user_id: str):
-        """Accept WebSocket connection"""
+    async def connect(self, websocket: WebSocket, session_id: str, user_id: str,
+                      permissions: Optional[List[str]] = None):
+        """Accept WebSocket connection with permissions"""
         await websocket.accept()
-        
+
         with self._lock:
             self.active_connections[session_id] = websocket
             self.connection_metadata[session_id] = {
                 'user_id': user_id,
+                'permissions': permissions or [],
                 'connected_at': datetime.utcnow(),
                 'last_ping': datetime.utcnow(),
                 'message_count': 0
             }
-        
+
         WEBSOCKET_CONNECTIONS.inc()
-        logger.info(f"WebSocket connected", user_id=user_id, session_id=session_id)
+        logger.info(f"WebSocket connected", user_id=user_id, session_id=session_id,
+                   permissions=permissions)
         
     def disconnect(self, session_id: str):
         """Disconnect WebSocket"""
@@ -320,30 +323,72 @@ class ConnectionManager:
                 logger.error(f"Failed to send message to {session_id}: {e}")
                 self.disconnect(session_id)
                 
-    async def broadcast(self, message: Dict, user_permissions: Optional[List[str]] = None):
-        """Broadcast message to all connections (with permission filtering)"""
-        
+    # Permission requirements for different message types
+    MESSAGE_PERMISSIONS = {
+        'trade_signal': ['trade', 'admin'],
+        'trade_executed': ['trade', 'admin'],
+        'position_update': ['trade', 'admin'],
+        'market_data': ['view', 'trade', 'admin'],
+        'agent_status': ['view', 'trade', 'admin'],
+        'system_alert': ['admin'],
+        'error_alert': ['admin'],
+        'performance_update': ['view', 'trade', 'admin'],
+        'regime_change': ['view', 'trade', 'admin'],
+        'ping': [],  # Everyone gets pings
+        'status': [],  # Everyone gets status updates
+    }
+
+    def _user_has_permission(self, user_permissions: List[str], required_permissions: List[str]) -> bool:
+        """Check if user has any of the required permissions"""
+        if not required_permissions:
+            return True  # No permission required
+        return any(perm in user_permissions for perm in required_permissions)
+
+    async def broadcast(self, message: Dict, required_permissions: Optional[List[str]] = None):
+        """Broadcast message to all connections with permission filtering"""
+
         disconnected_sessions = []
-        
+        message_type = message.get('type', 'unknown')
+
+        # Determine required permissions for this message type
+        if required_permissions is None:
+            required_permissions = self.MESSAGE_PERMISSIONS.get(message_type, [])
+
         with self._lock:
             connections_to_notify = list(self.active_connections.items())
-            
+            metadata_copy = dict(self.connection_metadata)
+
+        recipients_count = 0
+        filtered_count = 0
+
         for session_id, websocket in connections_to_notify:
             try:
-                # TODO: Add permission checking if user_permissions specified
+                # Check user permissions if required
+                user_metadata = metadata_copy.get(session_id, {})
+                user_permissions = user_metadata.get('permissions', [])
+
+                # Skip if user doesn't have required permissions
+                if required_permissions and not self._user_has_permission(user_permissions, required_permissions):
+                    filtered_count += 1
+                    continue
+
                 await websocket.send_json(message)
-                
+                recipients_count += 1
+
                 with self._lock:
                     if session_id in self.connection_metadata:
                         self.connection_metadata[session_id]['message_count'] += 1
-                        
+
             except Exception as e:
                 logger.error(f"Failed to broadcast to {session_id}: {e}")
                 disconnected_sessions.append(session_id)
-                
+
         # Clean up disconnected sessions
         for session_id in disconnected_sessions:
             self.disconnect(session_id)
+
+        if filtered_count > 0:
+            logger.debug(f"Broadcast {message_type}: sent to {recipients_count}, filtered {filtered_count}")
             
     async def ping_all_connections(self):
         """Send ping to all connections for health check"""

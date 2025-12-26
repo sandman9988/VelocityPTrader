@@ -303,6 +303,47 @@ class AgentPerformance(Base):
         Index('idx_agent_performance_symbol', 'symbol', 'timeframe'),
     )
 
+class ErrorLog(Base):
+    """Error log persistence for tracking and debugging"""
+    __tablename__ = 'error_logs'
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    session_id = Column(UUID(as_uuid=True), ForeignKey('trading_sessions.id'), nullable=True)
+
+    # Error details
+    component = Column(String(100), nullable=False)
+    error_type = Column(String(100), nullable=False)
+    error_message = Column(Text, nullable=False)
+    severity = Column(String(20), nullable=False)  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+
+    # Context and debugging
+    stack_trace = Column(Text, nullable=True)
+    context = Column(JSONB, nullable=True)
+
+    # Resolution tracking
+    resolved = Column(Boolean, default=False, nullable=False)
+    resolved_at = Column(DateTime(timezone=True), nullable=True)
+    resolution_notes = Column(Text, nullable=True)
+
+    # Timestamps
+    timestamp = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Relationships
+    session = relationship("TradingSession")
+
+    # Constraints
+    __table_args__ = (
+        CheckConstraint("severity IN ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')", name='valid_error_severity'),
+        CheckConstraint('(resolved = false AND resolved_at IS NULL) OR (resolved = true AND resolved_at IS NOT NULL)', name='consistent_resolution_status'),
+        Index('idx_error_logs_session', 'session_id'),
+        Index('idx_error_logs_severity', 'severity'),
+        Index('idx_error_logs_component', 'component'),
+        Index('idx_error_logs_timestamp', 'timestamp'),
+        Index('idx_error_logs_unresolved', 'resolved', postgresql_where='resolved = false'),
+    )
+
+
 class SystemHealth(Base):
     """System health and monitoring"""
     __tablename__ = 'system_health'
@@ -400,8 +441,8 @@ def validate_schema(engine):
     tables = inspector.get_table_names()
     
     required_tables = [
-        'trading_sessions', 'market_data', 'trades', 
-        'agent_performance', 'system_health'
+        'trading_sessions', 'market_data', 'trades',
+        'agent_performance', 'system_health', 'error_logs'
     ]
     
     missing_tables = set(required_tables) - set(tables)
