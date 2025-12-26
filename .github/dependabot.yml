@@ -1,0 +1,99 @@
+version: 2
+updates:
+  # Python dependencies
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "velocitytrader-team"
+    assignees:
+      - "velocitytrader-team"
+    labels:
+      - "dependencies"
+      - "python"
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps-dev"
+      include: "scope"
+    # Security updates get priority
+    allow:
+      - dependency-type: "direct"
+      - dependency-type: "indirect"
+    # Group minor and patch updates
+    groups:
+      production-dependencies:
+        patterns:
+          - "numpy"
+          - "pandas" 
+          - "torch"
+          - "MetaTrader5"
+          - "psutil"
+          - "structlog"
+          - "aiohttp"
+          - "websockets"
+          - "sqlalchemy"
+        update-types:
+          - "minor"
+          - "patch"
+      development-dependencies:
+        patterns:
+          - "pytest*"
+          - "black"
+          - "ruff"
+          - "mypy"
+          - "flake8*"
+          - "bandit"
+          - "safety"
+          - "pre-commit"
+        update-types:
+          - "minor"
+          - "patch"
+    # Ignore specific packages that need manual review
+    ignore:
+      - dependency-name: "MetaTrader5"
+        # MT5 updates need careful testing with broker
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "torch"
+        # PyTorch major updates need compatibility testing
+        update-types: ["version-update:semver-major"]
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+      time: "05:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "velocitytrader-team"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+
+  # Docker dependencies (if we add Dockerfile later)
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "05:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "velocitytrader-team"
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "docker"
+      include: "scope"

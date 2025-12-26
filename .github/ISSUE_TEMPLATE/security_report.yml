@@ -1,0 +1,128 @@
+name: 🔒 Security Report
+description: Report a security vulnerability in VelocityTrader
+title: "[SECURITY] "
+labels: ["security", "critical"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## ⚠️ IMPORTANT SECURITY NOTICE ⚠️
+        
+        **For critical security vulnerabilities, please DO NOT use this public form.**
+        
+        Instead, please email security@velocitytrader.ai directly with:
+        - A detailed description of the vulnerability
+        - Steps to reproduce (if applicable)
+        - Potential impact assessment
+        - Your contact information
+        
+        We follow responsible disclosure practices and will work with you to address the issue promptly.
+
+  - type: checkboxes
+    id: severity_check
+    attributes:
+      label: Severity Assessment
+      description: Please assess the severity of this security issue
+      options:
+        - label: This is a LOW severity issue (minor information disclosure, no direct impact)
+          required: false
+        - label: This is a CRITICAL issue (data exposure, system compromise, financial impact)
+          required: false
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Security Category
+      description: What type of security issue is this?
+      options:
+        - Information Disclosure
+        - Authentication/Authorization
+        - Input Validation
+        - Cryptographic Issue
+        - Network Security
+        - Configuration Security
+        - Dependency Vulnerability
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Issue Description
+      description: Provide a detailed description of the security issue (avoid sensitive details)
+      placeholder: Describe the security issue...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      description: Which component is affected by this security issue?
+      options:
+        - MT5 Connection/Authentication
+        - Trading Engine
+        - Data Pipeline
+        - Web Dashboard
+        - Configuration Files
+        - Logging System
+        - Agent System
+        - Multiple Components
+        - Unknown
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Potential Impact
+      description: What could an attacker potentially achieve?
+      placeholder: |
+        - Data access: What data could be exposed?
+        - System impact: What systems could be affected?
+        - Financial impact: Could this affect trading operations?
+    validations:
+      required: true
+
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: Suggested Mitigation
+      description: Do you have suggestions for addressing this issue?
+      placeholder: Suggested fixes or mitigations...
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: Environment where the issue was discovered
+      placeholder: |
+        - OS: 
+        - Python Version: 
+        - VelocityTrader Version: 
+        - Network Configuration:
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: disclosure
+    attributes:
+      label: Responsible Disclosure
+      description: Please acknowledge responsible disclosure practices
+      options:
+        - label: I understand this is a public repository and sensitive details should not be shared here
+          required: true
+        - label: I will not publicly disclose details until a fix is available
+          required: true
+        - label: I am willing to work with maintainers to verify and address this issue
+          required: true
+
+  - type: textarea
+    id: contact
+    attributes:
+      label: Contact Information
+      description: How can we reach you for follow-up? (Optional but recommended)
+      placeholder: Email, GitHub handle, or other secure communication method...

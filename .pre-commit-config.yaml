@@ -1,0 +1,183 @@
+# Pre-commit hooks for VelocityTrader
+# Install with: pre-commit install
+# Run manually with: pre-commit run --all-files
+
+repos:
+  # Pre-commit hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^(models|rl_models|logs|results|reports)/
+      - id: end-of-file-fixer
+        exclude: ^(models|rl_models|logs|results|reports)/
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-json
+      - id: check-toml
+      - id: check-xml
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-docstring-first
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+      - id: check-added-large-files
+        args: ['--maxkb=1000']  # 1MB limit
+      - id: detect-aws-credentials
+      - id: detect-private-key
+      - id: fix-byte-order-marker
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+
+  # Security scanning with bandit
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        args: ['-c', 'pyproject.toml']
+        additional_dependencies: ["bandit[toml]"]
+        exclude: ^tests/
+
+  # Vulnerability scanning
+  - repo: https://github.com/pyupio/safety
+    rev: 3.0.1
+    hooks:
+      - id: safety
+        args: [--short-report]
+
+  # Python code formatting with black
+  - repo: https://github.com/psf/black
+    rev: 23.12.1
+    hooks:
+      - id: black
+        language_version: python3.11
+        exclude: ^(models|rl_models|logs|results|reports)/
+
+  # Import sorting with isort
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: ["--profile", "black", "--check-only", "--diff"]
+        exclude: ^(models|rl_models|logs|results|reports)/
+
+  # Ultra-fast linting with Ruff
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.9
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        exclude: ^(models|rl_models|logs|results|reports)/
+      - id: ruff-format
+        exclude: ^(models|rl_models|logs|results|reports)/
+
+  # Type checking with mypy
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-requests]
+        args: [--ignore-missing-imports, --show-error-codes]
+        exclude: ^(tests|models|rl_models|logs|results|reports)/
+
+  # Additional Python linting
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        additional_dependencies:
+          - flake8-bugbear
+          - flake8-docstrings
+          - flake8-import-order
+        exclude: ^(models|rl_models|logs|results|reports)/
+
+  # Python upgrade syntax
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.15.0
+    hooks:
+      - id: pyupgrade
+        args: [--py39-plus]
+        exclude: ^(models|rl_models|logs|results|reports)/
+
+  # Remove unused imports
+  - repo: https://github.com/PyCQA/autoflake
+    rev: v2.2.1
+    hooks:
+      - id: autoflake
+        args:
+          - --remove-all-unused-imports
+          - --remove-unused-variables
+          - --remove-duplicate-keys
+          - --in-place
+        exclude: ^(models|rl_models|logs|results|reports)/
+
+  # Dockerfile linting
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint
+        args: [--ignore, DL3008, --ignore, DL3009]
+
+  # Shell script linting
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.9.0.6
+    hooks:
+      - id: shellcheck
+
+  # Python docstring formatting
+  - repo: https://github.com/PyCQA/docformatter
+    rev: v1.7.5
+    hooks:
+      - id: docformatter
+        args: [--in-place, --wrap-summaries=88, --wrap-descriptions=88]
+        exclude: ^(models|rl_models|logs|results|reports)/
+
+  # Python dependency security check
+  - repo: local
+    hooks:
+      - id: pip-audit
+        name: pip-audit
+        entry: pip-audit
+        language: python
+        additional_dependencies: [pip-audit]
+        args: [--desc, --disable-pip]
+        pass_filenames: false
+
+  # Custom trading system checks
+  - repo: local
+    hooks:
+      - id: check-no-mock-data
+        name: Ensure no mock/fake data usage
+        entry: python
+        language: python
+        args: ['-c', 'import sys; import re; content = open(sys.argv[1]).read(); exit(1 if re.search(r"(fake|mock).*data", content, re.I) else 0)']
+        files: '^src/.*\.py$'
+        exclude: ^tests/
+      
+      - id: check-vantage-server
+        name: Ensure Vantage server usage
+        entry: python
+        language: python
+        args: ['-c', 'import sys; content = open(sys.argv[1]).read(); exit(0 if "VantageInternational-Demo" in content or "vantage" not in content.lower() else 1)']
+        files: '^src/.*\.py$'
+        exclude: ^tests/
+      
+      - id: check-credentials
+        name: Check for hardcoded credentials
+        entry: python
+        language: python
+        args: ['-c', 'import sys; import re; content = open(sys.argv[1]).read(); exit(1 if re.search(r"(password|token|key)\s*=\s*[\"\']\w+", content, re.I) else 0)']
+        files: '^src/.*\.py$'
+
+# Global configuration
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit hooks
+
+    for more information, see https://pre-commit.ci
+  autofix_prs: true
+  autoupdate_branch: ''
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: [pip-audit]  # Skip pip-audit in CI as it may be slow
+  submodules: false

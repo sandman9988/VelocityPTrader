@@ -1,0 +1,62 @@
+[flake8]
+# Configuration for flake8
+# Compatible with black formatter
+
+max-line-length = 88
+max-complexity = 12
+select = E,W,F,C90,I
+ignore = 
+    # Black compatibility
+    E203,  # whitespace before ':'
+    E501,  # line too long (handled by black)
+    W503,  # line break before binary operator
+    W504,  # line break after binary operator
+    # Docstring requirements (handled by ruff)
+    D100,  # Missing docstring in public module
+    D101,  # Missing docstring in public class
+    D102,  # Missing docstring in public method
+    D103,  # Missing docstring in public function
+    D104,  # Missing docstring in public package
+    D105,  # Missing docstring in magic method
+
+exclude =
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    .eggs,
+    *.egg,
+    build,
+    dist,
+    models,
+    rl_models,
+    logs,
+    results,
+    reports,
+    .tox,
+    .coverage,
+    .coverage.*,
+    .cache,
+    noqa,
+    .mypy_cache,
+    .pytest_cache,
+    *.pyo,
+    *.pyc
+
+per-file-ignores =
+    # Tests can use asserts and have longer lines
+    tests/*.py:S101,E501
+    # Init files can be empty
+    __init__.py:F401
+    # Setup files can have imports
+    setup.py:E402
+    # Config files can have long lines
+    config/*.py:E501
+
+import-order-style = google
+application-import-names = src,velocity_trader
+format = default
+
+# Docstring checking
+docstring-convention = google
+strictness = short

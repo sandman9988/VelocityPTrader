@@ -1,0 +1,135 @@
+name: 🚀 Feature Request
+description: Suggest a new feature for VelocityTrader
+title: "[FEATURE] "
+labels: ["enhancement", "needs-discussion"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting a feature for VelocityTrader! Please fill out this form to help us understand your request.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      description: Please verify these steps before submitting
+      options:
+        - label: I have searched for existing feature requests
+          required: true
+        - label: This feature aligns with VelocityTrader's physics-based approach
+          required: true
+        - label: I have considered the implementation complexity
+          required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Feature Category
+      description: Which category does this feature belong to?
+      options:
+        - Trading Algorithm Enhancement
+        - Data Processing Improvement
+        - Performance Optimization
+        - Security Enhancement
+        - User Interface/Dashboard
+        - Configuration/Settings
+        - Testing/Monitoring
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature?
+      options:
+        - Critical (Essential for production use)
+        - High (Would significantly improve functionality)
+        - Medium (Nice to have, would improve usability)
+        - Low (Minor improvement)
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: Is your feature request related to a problem? Please describe.
+      placeholder: "I'm always frustrated when..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you'd like
+      placeholder: "I would like to see..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative Solutions
+      description: Describe any alternative solutions or features you've considered
+      placeholder: "Alternatively, we could..."
+
+  - type: textarea
+    id: use_case
+    attributes:
+      label: Use Case
+      description: Provide specific use cases where this feature would be beneficial
+      placeholder: |
+        1. When trading volatile markets...
+        2. During high-frequency scenarios...
+        3. For risk management...
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation
+    attributes:
+      label: Implementation Details
+      description: If you have ideas about how this could be implemented
+      placeholder: |
+        Technical approach:
+        - Component modifications needed
+        - New dependencies
+        - API changes
+
+  - type: checkboxes
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: What areas would this feature impact?
+      options:
+        - label: Trading performance/accuracy
+        - label: System performance/speed
+        - label: Memory usage
+        - label: Security
+        - label: Configuration complexity
+        - label: Testing requirements
+        - label: Documentation needs
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, or examples about the feature request
+      placeholder: Any additional information...
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Are you willing to contribute to this feature?
+      options:
+        - label: I would like to implement this feature myself
+        - label: I can provide testing and feedback
+        - label: I can help with documentation
+        - label: I can provide domain expertise

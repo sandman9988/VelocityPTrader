@@ -29,10 +29,25 @@ sqlalchemy>=2.0.0
 matplotlib>=3.7.0
 plotly>=5.14.0
 
-# Development tools
+# Development tools - Super Linting & Static Analysis
 black>=23.0.0
+isort>=5.12.0
+ruff>=0.3.0
 flake8>=6.0.0
+flake8-bugbear>=23.0.0
+flake8-docstrings>=1.7.0
+flake8-import-order>=0.18.0
 mypy>=1.4.0
+pylint>=2.17.0
+
+# Security scanning
+bandit>=1.7.0
+safety>=3.0.0
+semgrep>=1.0.0
+
+# Code quality
+pre-commit>=3.0.0
+coverage>=7.0.0
 
 # GPU acceleration (optional)
 pyopencl>=2024.1.0
