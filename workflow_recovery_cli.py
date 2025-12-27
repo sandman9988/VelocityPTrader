@@ -9,7 +9,6 @@ import json
 import sys
 from pathlib import Path
 from datetime import datetime
-from typing import Optional
 
 # Add src to path for local development and testing
 # This allows the CLI to work without package installation
