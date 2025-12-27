@@ -448,12 +448,8 @@ class EnterpriseDashboard:
             allow_headers=["*"],
         )
         
-        # Trusted host middleware
-        self.app.add_middleware(
-            TrustedHostMiddleware,
-            allowed_hosts=["*"]  # Allow all hosts for WSL2 Windows access
-        )
-        
+        # Note: TrustedHostMiddleware removed for WSL2 Windows access compatibility
+
         # GZip compression
         self.app.add_middleware(GZipMiddleware, minimum_size=1000)
         
