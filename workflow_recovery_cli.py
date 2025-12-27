@@ -8,7 +8,6 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from datetime import datetime
 
 # Add src to path for local development and testing
 # This allows the CLI to work without package installation
