@@ -275,7 +275,8 @@ class WorkflowFailureAnalyzer:
             WorkflowFailure object with analysis results
         """
         if timestamp is None:
-            timestamp = datetime.utcnow()
+            from datetime import timezone
+            timestamp = datetime.now(timezone.utc)
         
         # Extract error message
         error_message = self._extract_error_message(log_content)

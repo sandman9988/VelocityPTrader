@@ -192,7 +192,7 @@ jobs:
         run: |
           echo "🔧 Executing auto-recovery for linting errors..."
           
-          # Run formatters
+          # Install formatters with specific versions from requirements
           pip install black isort ruff
           
           black src/ tests/ || true

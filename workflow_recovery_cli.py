@@ -11,7 +11,11 @@ from pathlib import Path
 from datetime import datetime
 from typing import Optional
 
-# Add src to path
+import sys
+from pathlib import Path
+
+# Add src to path for local development and testing
+# This allows the CLI to work without package installation
 sys.path.insert(0, str(Path(__file__).parent))
 
 from src.utils.workflow_failure_analyzer import WorkflowFailureAnalyzer

@@ -8,7 +8,12 @@ from datetime import datetime
 from pathlib import Path
 import sys
 
-# Add src to path
+import sys
+from pathlib import Path
+from datetime import datetime
+
+# Add src to path for test execution
+# This allows tests to run without package installation
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.utils.workflow_failure_analyzer import (
