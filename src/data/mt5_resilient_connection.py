@@ -116,6 +116,7 @@ class MT5ResilientConnection(ConnectionManagerBase):
 
             # If ZMQ is configured, try ZMQ connection
             if self.config.zmq_port > 0:
+                zmq_success = False
                 try:
                     import zmq.asyncio
                     self._zmq_context = zmq.asyncio.Context()
@@ -130,6 +131,7 @@ class MT5ResilientConnection(ConnectionManagerBase):
 
                     if response.get("status") == "ok":
                         self._is_initialized = True
+                        zmq_success = True
                         logger.info("MT5 ZMQ connection established")
                         return True
 
@@ -138,8 +140,8 @@ class MT5ResilientConnection(ConnectionManagerBase):
                 except Exception as e:
                     logger.warning("ZMQ connection failed", error=str(e))
                 finally:
-                    # Clean up socket and context on any failure
-                    if not self._is_initialized or self._zmq_socket is None:
+                    # Clean up socket and context only if connection failed
+                    if not zmq_success:
                         if self._zmq_socket:
                             self._zmq_socket.close()
                             self._zmq_socket = None
