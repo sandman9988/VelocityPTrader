@@ -4,13 +4,9 @@ Tests for Workflow Failure Analyzer
 """
 
 import pytest
+import sys
 from datetime import datetime
 from pathlib import Path
-import sys
-
-import sys
-from pathlib import Path
-from datetime import datetime
 
 # Add src to path for test execution
 # This allows tests to run without package installation

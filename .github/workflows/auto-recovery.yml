@@ -68,7 +68,7 @@ jobs:
           import json
           import sys
           from pathlib import Path
-          from datetime import datetime
+          from datetime import datetime, timezone
           
           sys.path.insert(0, str(Path.cwd()))
           from src.utils.workflow_failure_analyzer import WorkflowFailureAnalyzer
@@ -95,7 +95,7 @@ jobs:
                           job_name=job_name,
                           step_name=step_name,
                           log_content=log_content,
-                          timestamp=datetime.utcnow()
+                          timestamp=datetime.now(timezone.utc)
                       )
                       
                       failures.append(failure)
