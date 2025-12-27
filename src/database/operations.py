@@ -1034,11 +1034,13 @@ class AtomicDataOperations:
             try:
                 parsed_value = int(value)
             except ValueError:
+                # If int parsing fails, fall back to the original string value
                 pass
         elif setting.value_type == 'float' and value:
             try:
                 parsed_value = float(value)
             except ValueError:
+                # If float parsing fails, fall back to the original string value
                 pass
         elif setting.value_type == 'bool' and value:
             parsed_value = value.lower() in ('true', '1', 'yes', 'on')
