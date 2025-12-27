@@ -9,7 +9,7 @@ import json
 from typing import Dict, List, Optional, Tuple
 from enum import Enum
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class FailureCategory(Enum):
@@ -275,7 +275,6 @@ class WorkflowFailureAnalyzer:
             WorkflowFailure object with analysis results
         """
         if timestamp is None:
-            from datetime import timezone
             timestamp = datetime.now(timezone.utc)
         
         # Extract error message
