@@ -17,6 +17,8 @@ VelocityPTrader implements a sophisticated trading system based on physics princ
 - **AMD Optimized**: Leverages 16-core AMD 5950X CPU with 128GB RAM
 - **Comprehensive Logging**: Defense-in-depth logging for analysis and debugging
 - **Shadow Trading**: Continuous virtual trading for accelerated learning
+- **🤖 AI-Powered Workflow Auto-Recovery**: Automatically detects, analyzes, and fixes CI/CD failures
+
 
 ## System Requirements
 
@@ -93,6 +95,53 @@ python -m pytest tests/
 2. **Phase 2**: Core data pipeline with unit tests (in progress)
 3. **Phase 3**: Agent framework with integration tests
 4. **Phase 4**: Full system integration and performance tests
+
+## 🤖 Workflow Auto-Recovery System
+
+VelocityPTrader includes an advanced AI-powered workflow auto-recovery system that automatically detects, analyzes, and fixes CI/CD failures.
+
+### Features
+
+- **Automatic Failure Detection**: Monitors all workflow runs and triggers on failures
+- **Intelligent Categorization**: Classifies failures into 12 categories (linting, dependencies, tests, security, etc.)
+- **AI-Powered Analysis**: Uses pattern matching and heuristics to diagnose issues
+- **Automated Fixes**: Automatically fixes safe issues like linting errors and formatting
+- **PR Creation**: Creates pull requests with automated fixes for review
+- **Issue Creation**: Opens issues for manual intervention when needed
+- **CLI Tool**: Local analysis and recovery tool for developers
+
+### Quick Start
+
+The auto-recovery system is already active and monitoring these workflows:
+- Comprehensive CI/CD Pipeline
+- PostgreSQL Enterprise Testing
+- CodeQL Security Analysis
+
+When a workflow fails, the system will:
+1. Analyze the failure automatically
+2. Categorize the problem
+3. Apply automated fixes (if safe), OR
+4. Create an issue with detailed analysis
+
+### Manual Analysis
+
+Use the CLI tool for local failure analysis:
+
+```bash
+# Analyze a workflow log
+python workflow_recovery_cli.py analyze --log workflow.log --workflow "CI/CD" --job "lint" --step "Black"
+
+# Generate recovery actions
+python workflow_recovery_cli.py recover --log workflow.log --workflow "CI/CD" --job "lint" --step "Black"
+
+# Execute recovery (dry-run first!)
+python workflow_recovery_cli.py execute --log workflow.log --workflow "CI/CD" --job "lint" --step "Black" --dry-run
+```
+
+### Documentation
+
+- **Quick Start**: [docs/WORKFLOW_AUTO_RECOVERY_QUICKSTART.md](docs/WORKFLOW_AUTO_RECOVERY_QUICKSTART.md)
+- **Full Documentation**: [docs/WORKFLOW_AUTO_RECOVERY.md](docs/WORKFLOW_AUTO_RECOVERY.md)
 
 ## Contributing
 
