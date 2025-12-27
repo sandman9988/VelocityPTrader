@@ -232,7 +232,16 @@ jobs:
           fi
           
           # Commit changes
-          git add .
+          # Only stage relevant workflow files instead of everything
+          CHANGED_FILES="$(git diff --name-only)"
+          WORKFLOW_FILES="$(echo "$CHANGED_FILES" | grep '^.github/workflows/' || true)"
+          
+          if [ -z "$WORKFLOW_FILES" ]; then
+            echo "⚠️ No workflow file changes to commit"
+            exit 0
+          fi
+          
+          echo "$WORKFLOW_FILES" | xargs git add
           git commit -m "🤖 Auto-recovery: Fix workflow failures
           
           Workflow: ${{ github.event.workflow_run.name }}
