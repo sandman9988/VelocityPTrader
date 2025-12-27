@@ -291,7 +291,10 @@ def with_retry(config: Optional[RetryConfig] = None, on_retry: Optional[Callable
             logger.error(f"All retries exhausted",
                         function=func.__name__,
                         attempts=retry_config.max_retries + 1)
-            raise last_exception
+            if last_exception is not None:
+                raise last_exception
+            else:
+                raise RuntimeError(f"All retries exhausted for {func.__name__}")
 
         @functools.wraps(func)
         async def async_wrapper(*args, **kwargs) -> T:
@@ -321,7 +324,10 @@ def with_retry(config: Optional[RetryConfig] = None, on_retry: Optional[Callable
             logger.error(f"All retries exhausted (async)",
                         function=func.__name__,
                         attempts=retry_config.max_retries + 1)
-            raise last_exception
+            if last_exception is not None:
+                raise last_exception
+            else:
+                raise RuntimeError(f"All retries exhausted for {func.__name__}")
 
         if asyncio.iscoroutinefunction(func):
             return async_wrapper
