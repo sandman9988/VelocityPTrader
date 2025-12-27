@@ -344,6 +344,37 @@ class ErrorLog(Base):
     )
 
 
+class SystemSettings(Base):
+    """System-wide settings and configuration"""
+    __tablename__ = 'system_settings'
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    category = Column(String(50), nullable=False)  # mt5, trading, risk, agents, monitoring
+    key = Column(String(100), nullable=False)
+    value = Column(Text, nullable=False)
+    value_type = Column(String(20), nullable=False, default='string')  # string, int, float, bool, json
+    description = Column(Text, nullable=True)
+    is_secret = Column(Boolean, default=False, nullable=False)  # For passwords, API keys
+    is_editable = Column(Boolean, default=True, nullable=False)
+    validation_regex = Column(String(255), nullable=True)
+    min_value = Column(Numeric(20, 6), nullable=True)
+    max_value = Column(Numeric(20, 6), nullable=True)
+
+    # Audit
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    updated_by = Column(String(100), nullable=True)
+
+    # Constraints
+    __table_args__ = (
+        UniqueConstraint('category', 'key', name='unique_setting_key'),
+        CheckConstraint("category IN ('mt5', 'trading', 'risk', 'agents', 'monitoring', 'dashboard', 'database', 'notifications')", name='valid_settings_category'),
+        CheckConstraint("value_type IN ('string', 'int', 'float', 'bool', 'json', 'password')", name='valid_value_type'),
+        Index('idx_system_settings_category', 'category'),
+        Index('idx_system_settings_key', 'key'),
+    )
+
+
 class SystemHealth(Base):
     """System health and monitoring"""
     __tablename__ = 'system_health'
@@ -442,7 +473,7 @@ def validate_schema(engine):
     
     required_tables = [
         'trading_sessions', 'market_data', 'trades',
-        'agent_performance', 'system_health', 'error_logs'
+        'agent_performance', 'system_health', 'error_logs', 'system_settings'
     ]
     
     missing_tables = set(required_tables) - set(tables)

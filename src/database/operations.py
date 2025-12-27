@@ -18,7 +18,7 @@ import structlog
 
 from .models import (
     TradingSession, MarketData, Trade, AgentPerformance, SystemHealth, ErrorLog,
-    TradingMode, AgentType, ActionType, MarketRegime
+    SystemSettings, TradingMode, AgentType, ActionType, MarketRegime
 )
 from .connection import DatabaseManager, get_database_manager, AtomicOperationError
 
@@ -743,3 +743,381 @@ class AtomicDataOperations:
             "uptime_seconds": time.time() - self._start_time,
             "operations_per_second": self._operation_count / (time.time() - self._start_time) if time.time() > self._start_time else 0
         }
+
+    # SETTINGS OPERATIONS
+
+    def get_setting(self, category: str, key: str) -> Optional[Dict[str, Any]]:
+        """Get a single setting by category and key"""
+        try:
+            with self.db.get_session() as session:
+                setting = session.query(SystemSettings).filter(
+                    and_(
+                        SystemSettings.category == category,
+                        SystemSettings.key == key
+                    )
+                ).first()
+
+                if not setting:
+                    return None
+
+                return self._setting_to_dict(setting)
+
+        except Exception as e:
+            logger.error("Failed to get setting", category=category, key=key, error=str(e))
+            return None
+
+    def get_settings_by_category(self, category: str) -> List[Dict[str, Any]]:
+        """Get all settings in a category"""
+        try:
+            with self.db.get_session() as session:
+                settings = session.query(SystemSettings).filter(
+                    SystemSettings.category == category
+                ).order_by(SystemSettings.key).all()
+
+                return [self._setting_to_dict(s) for s in settings]
+
+        except Exception as e:
+            logger.error("Failed to get settings by category", category=category, error=str(e))
+            return []
+
+    def get_all_settings(self, include_secrets: bool = False) -> Dict[str, List[Dict[str, Any]]]:
+        """Get all settings grouped by category"""
+        try:
+            with self.db.get_session() as session:
+                settings = session.query(SystemSettings).order_by(
+                    SystemSettings.category, SystemSettings.key
+                ).all()
+
+                result = {}
+                for setting in settings:
+                    category = setting.category
+                    if category not in result:
+                        result[category] = []
+                    result[category].append(self._setting_to_dict(setting, include_secrets))
+
+                return result
+
+        except Exception as e:
+            logger.error("Failed to get all settings", error=str(e))
+            return {}
+
+    def update_setting(
+        self,
+        category: str,
+        key: str,
+        value: str,
+        updated_by: Optional[str] = None
+    ) -> Optional[Dict[str, Any]]:
+        """Update a setting value"""
+        try:
+            with self.db.atomic_transaction() as session:
+                setting = session.query(SystemSettings).filter(
+                    and_(
+                        SystemSettings.category == category,
+                        SystemSettings.key == key
+                    )
+                ).first()
+
+                if not setting:
+                    logger.warning("Setting not found", category=category, key=key)
+                    return None
+
+                if not setting.is_editable:
+                    logger.warning("Setting is not editable", category=category, key=key)
+                    return None
+
+                # Validate value based on type
+                validated_value = self._validate_setting_value(setting, value)
+                if validated_value is None:
+                    return None
+
+                setting.value = validated_value
+                setting.updated_by = updated_by
+
+                session.flush()
+
+                logger.info("Setting updated",
+                           category=category,
+                           key=key,
+                           updated_by=updated_by)
+
+                self._operation_count += 1
+                return self._setting_to_dict(setting)
+
+        except Exception as e:
+            logger.error("Failed to update setting", category=category, key=key, error=str(e))
+            return None
+
+    def create_or_update_setting(
+        self,
+        category: str,
+        key: str,
+        value: str,
+        value_type: str = 'string',
+        description: Optional[str] = None,
+        is_secret: bool = False,
+        is_editable: bool = True,
+        min_value: Optional[float] = None,
+        max_value: Optional[float] = None,
+        validation_regex: Optional[str] = None
+    ) -> Optional[Dict[str, Any]]:
+        """Create or update a setting"""
+        try:
+            with self.db.atomic_transaction() as session:
+                setting = session.query(SystemSettings).filter(
+                    and_(
+                        SystemSettings.category == category,
+                        SystemSettings.key == key
+                    )
+                ).first()
+
+                if setting:
+                    # Update existing
+                    setting.value = value
+                    setting.description = description or setting.description
+                else:
+                    # Create new
+                    setting = SystemSettings(
+                        category=category,
+                        key=key,
+                        value=value,
+                        value_type=value_type,
+                        description=description,
+                        is_secret=is_secret,
+                        is_editable=is_editable,
+                        min_value=Decimal(str(min_value)) if min_value is not None else None,
+                        max_value=Decimal(str(max_value)) if max_value is not None else None,
+                        validation_regex=validation_regex
+                    )
+                    session.add(setting)
+
+                session.flush()
+
+                logger.info("Setting created/updated", category=category, key=key)
+                self._operation_count += 1
+                return self._setting_to_dict(setting)
+
+        except Exception as e:
+            logger.error("Failed to create/update setting", error=str(e))
+            return None
+
+    def initialize_default_settings(self) -> bool:
+        """Initialize default settings for all categories"""
+        default_settings = [
+            # MT5 Connection Settings
+            {'category': 'mt5', 'key': 'server', 'value': 'VantageInternational-Demo', 'value_type': 'string',
+             'description': 'MT5 server address', 'is_editable': True},
+            {'category': 'mt5', 'key': 'login', 'value': '', 'value_type': 'int',
+             'description': 'MT5 account login number', 'is_editable': True},
+            {'category': 'mt5', 'key': 'password', 'value': '', 'value_type': 'password',
+             'description': 'MT5 account password', 'is_secret': True, 'is_editable': True},
+            {'category': 'mt5', 'key': 'timeout', 'value': '60000', 'value_type': 'int',
+             'description': 'Connection timeout in milliseconds', 'min_value': 1000, 'max_value': 300000},
+            {'category': 'mt5', 'key': 'retry_attempts', 'value': '3', 'value_type': 'int',
+             'description': 'Number of connection retry attempts', 'min_value': 1, 'max_value': 10},
+            {'category': 'mt5', 'key': 'retry_delay_ms', 'value': '5000', 'value_type': 'int',
+             'description': 'Delay between retry attempts in milliseconds', 'min_value': 1000, 'max_value': 60000},
+            {'category': 'mt5', 'key': 'zmq_port', 'value': '5555', 'value_type': 'int',
+             'description': 'ZeroMQ bridge port for Windows-WSL communication', 'min_value': 1024, 'max_value': 65535},
+
+            # Trading Settings
+            {'category': 'trading', 'key': 'mode', 'value': 'VIRTUAL', 'value_type': 'string',
+             'description': 'Trading mode (LIVE or VIRTUAL)', 'is_editable': True},
+            {'category': 'trading', 'key': 'default_timeframe', 'value': 'M15', 'value_type': 'string',
+             'description': 'Default trading timeframe'},
+            {'category': 'trading', 'key': 'max_positions_per_symbol', 'value': '1', 'value_type': 'int',
+             'description': 'Maximum concurrent positions per symbol', 'min_value': 1, 'max_value': 10},
+            {'category': 'trading', 'key': 'default_lot_size', 'value': '0.01', 'value_type': 'float',
+             'description': 'Default position lot size', 'min_value': 0.01, 'max_value': 100},
+            {'category': 'trading', 'key': 'max_lot_size', 'value': '1.0', 'value_type': 'float',
+             'description': 'Maximum allowed lot size', 'min_value': 0.01, 'max_value': 100},
+            {'category': 'trading', 'key': 'slippage_pips', 'value': '3', 'value_type': 'int',
+             'description': 'Maximum allowed slippage in pips', 'min_value': 0, 'max_value': 50},
+            {'category': 'trading', 'key': 'magic_number', 'value': '123456', 'value_type': 'int',
+             'description': 'MT5 expert advisor magic number'},
+
+            # Risk Management Settings
+            {'category': 'risk', 'key': 'max_daily_drawdown_pct', 'value': '5.0', 'value_type': 'float',
+             'description': 'Maximum daily drawdown percentage', 'min_value': 0.1, 'max_value': 50},
+            {'category': 'risk', 'key': 'max_total_drawdown_pct', 'value': '20.0', 'value_type': 'float',
+             'description': 'Maximum total drawdown percentage', 'min_value': 1, 'max_value': 100},
+            {'category': 'risk', 'key': 'risk_per_trade_pct', 'value': '1.0', 'value_type': 'float',
+             'description': 'Risk percentage per trade', 'min_value': 0.1, 'max_value': 10},
+            {'category': 'risk', 'key': 'max_consecutive_losses', 'value': '5', 'value_type': 'int',
+             'description': 'Circuit breaker: max consecutive losses', 'min_value': 1, 'max_value': 20},
+            {'category': 'risk', 'key': 'daily_loss_limit', 'value': '1000', 'value_type': 'float',
+             'description': 'Daily loss limit in account currency', 'min_value': 0},
+            {'category': 'risk', 'key': 'circuit_breaker_enabled', 'value': 'true', 'value_type': 'bool',
+             'description': 'Enable circuit breaker for risk management'},
+            {'category': 'risk', 'key': 'vpin_threshold', 'value': '0.7', 'value_type': 'float',
+             'description': 'VPIN threshold for high toxicity detection', 'min_value': 0, 'max_value': 1},
+
+            # Agent Settings
+            {'category': 'agents', 'key': 'berserker_enabled', 'value': 'true', 'value_type': 'bool',
+             'description': 'Enable BERSERKER agent'},
+            {'category': 'agents', 'key': 'sniper_enabled', 'value': 'true', 'value_type': 'bool',
+             'description': 'Enable SNIPER agent'},
+            {'category': 'agents', 'key': 'exploration_rate', 'value': '0.1', 'value_type': 'float',
+             'description': 'RL exploration rate (epsilon)', 'min_value': 0, 'max_value': 1},
+            {'category': 'agents', 'key': 'learning_rate', 'value': '0.001', 'value_type': 'float',
+             'description': 'RL learning rate (alpha)', 'min_value': 0.0001, 'max_value': 0.1},
+            {'category': 'agents', 'key': 'doppelganger_enabled', 'value': 'true', 'value_type': 'bool',
+             'description': 'Enable doppelganger shadow instances'},
+            {'category': 'agents', 'key': 'min_trades_to_switch', 'value': '30', 'value_type': 'int',
+             'description': 'Minimum trades before instance switching', 'min_value': 10, 'max_value': 100},
+
+            # Monitoring Settings
+            {'category': 'monitoring', 'key': 'prometheus_port', 'value': '9090', 'value_type': 'int',
+             'description': 'Prometheus metrics exporter port', 'min_value': 1024, 'max_value': 65535},
+            {'category': 'monitoring', 'key': 'grafana_url', 'value': 'http://localhost:3000', 'value_type': 'string',
+             'description': 'Grafana dashboard URL'},
+            {'category': 'monitoring', 'key': 'log_level', 'value': 'INFO', 'value_type': 'string',
+             'description': 'Logging level (DEBUG, INFO, WARNING, ERROR)'},
+            {'category': 'monitoring', 'key': 'metrics_update_interval_sec', 'value': '5', 'value_type': 'int',
+             'description': 'Metrics update interval in seconds', 'min_value': 1, 'max_value': 60},
+
+            # Dashboard Settings
+            {'category': 'dashboard', 'key': 'port', 'value': '8443', 'value_type': 'int',
+             'description': 'Dashboard HTTPS port', 'min_value': 1024, 'max_value': 65535},
+            {'category': 'dashboard', 'key': 'auto_refresh_sec', 'value': '5', 'value_type': 'int',
+             'description': 'Auto-refresh interval in seconds', 'min_value': 1, 'max_value': 60},
+            {'category': 'dashboard', 'key': 'theme', 'value': 'dark', 'value_type': 'string',
+             'description': 'Dashboard theme (dark or light)'},
+            {'category': 'dashboard', 'key': 'show_virtual_trades', 'value': 'true', 'value_type': 'bool',
+             'description': 'Show virtual/shadow trades in dashboard'},
+
+            # Database Settings
+            {'category': 'database', 'key': 'host', 'value': 'localhost', 'value_type': 'string',
+             'description': 'PostgreSQL host', 'is_editable': True},
+            {'category': 'database', 'key': 'port', 'value': '5432', 'value_type': 'int',
+             'description': 'PostgreSQL port', 'min_value': 1024, 'max_value': 65535},
+            {'category': 'database', 'key': 'name', 'value': 'velocitytrader', 'value_type': 'string',
+             'description': 'Database name'},
+            {'category': 'database', 'key': 'pool_size', 'value': '10', 'value_type': 'int',
+             'description': 'Connection pool size', 'min_value': 1, 'max_value': 50},
+
+            # Notifications Settings
+            {'category': 'notifications', 'key': 'email_enabled', 'value': 'false', 'value_type': 'bool',
+             'description': 'Enable email notifications'},
+            {'category': 'notifications', 'key': 'email_smtp_host', 'value': '', 'value_type': 'string',
+             'description': 'SMTP server host'},
+            {'category': 'notifications', 'key': 'email_smtp_port', 'value': '587', 'value_type': 'int',
+             'description': 'SMTP server port', 'min_value': 1, 'max_value': 65535},
+            {'category': 'notifications', 'key': 'email_to', 'value': '', 'value_type': 'string',
+             'description': 'Notification recipient email'},
+            {'category': 'notifications', 'key': 'webhook_enabled', 'value': 'false', 'value_type': 'bool',
+             'description': 'Enable webhook notifications'},
+            {'category': 'notifications', 'key': 'webhook_url', 'value': '', 'value_type': 'string',
+             'description': 'Webhook URL for notifications'},
+        ]
+
+        try:
+            for setting_def in default_settings:
+                self.create_or_update_setting(**setting_def)
+
+            logger.info("Default settings initialized", count=len(default_settings))
+            return True
+
+        except Exception as e:
+            logger.error("Failed to initialize default settings", error=str(e))
+            return False
+
+    def _setting_to_dict(self, setting: SystemSettings, include_secrets: bool = False) -> Dict[str, Any]:
+        """Convert setting to dictionary"""
+        value = setting.value
+        if setting.is_secret and not include_secrets:
+            value = '********' if setting.value else ''
+
+        # Parse value based on type
+        parsed_value = value
+        if setting.value_type == 'int' and value:
+            try:
+                parsed_value = int(value)
+            except ValueError:
+                pass
+        elif setting.value_type == 'float' and value:
+            try:
+                parsed_value = float(value)
+            except ValueError:
+                pass
+        elif setting.value_type == 'bool' and value:
+            parsed_value = value.lower() in ('true', '1', 'yes', 'on')
+        elif setting.value_type == 'json' and value:
+            try:
+                import json
+                parsed_value = json.loads(value)
+            except (ValueError, TypeError):
+                # If JSON parsing fails, fall back to the original string and log for observability.
+                logger.warning(
+                    "Failed to parse JSON setting value; using raw string",
+                    setting_id=str(setting.id),
+                    category=setting.category,
+                    key=setting.key,
+                )
+
+        return {
+            'id': str(setting.id),
+            'category': setting.category,
+            'key': setting.key,
+            'value': parsed_value,
+            'raw_value': value if not setting.is_secret or include_secrets else None,
+            'value_type': setting.value_type,
+            'description': setting.description,
+            'is_secret': setting.is_secret,
+            'is_editable': setting.is_editable,
+            'min_value': float(setting.min_value) if setting.min_value else None,
+            'max_value': float(setting.max_value) if setting.max_value else None,
+            'updated_at': setting.updated_at.isoformat() if setting.updated_at else None,
+            'updated_by': setting.updated_by
+        }
+
+    def _validate_setting_value(self, setting: SystemSettings, value: str) -> Optional[str]:
+        """Validate setting value against constraints"""
+        import re
+
+        # Check regex validation
+        if setting.validation_regex:
+            if not re.match(setting.validation_regex, value):
+                logger.warning("Setting value failed regex validation",
+                              key=setting.key, pattern=setting.validation_regex)
+                return None
+
+        # Type-specific validation
+        if setting.value_type == 'int':
+            try:
+                int_val = int(value)
+                if setting.min_value is not None and int_val < float(setting.min_value):
+                    logger.warning("Setting value below minimum", key=setting.key,
+                                  value=int_val, min_value=float(setting.min_value))
+                    return None
+                if setting.max_value is not None and int_val > float(setting.max_value):
+                    logger.warning("Setting value above maximum", key=setting.key,
+                                  value=int_val, max_value=float(setting.max_value))
+                    return None
+            except ValueError:
+                logger.warning("Invalid integer value for setting", key=setting.key, value=value)
+                return None
+
+        elif setting.value_type == 'float':
+            try:
+                float_val = float(value)
+                if setting.min_value is not None and float_val < float(setting.min_value):
+                    logger.warning("Setting value below minimum", key=setting.key,
+                                  value=float_val, min_value=float(setting.min_value))
+                    return None
+                if setting.max_value is not None and float_val > float(setting.max_value):
+                    logger.warning("Setting value above maximum", key=setting.key,
+                                  value=float_val, max_value=float(setting.max_value))
+                    return None
+            except ValueError:
+                logger.warning("Invalid float value for setting", key=setting.key, value=value)
+                return None
+
+        elif setting.value_type == 'bool':
+            if value.lower() not in ('true', 'false', '1', '0', 'yes', 'no', 'on', 'off'):
+                logger.warning("Invalid boolean value for setting", key=setting.key, value=value)
+                return None
+            # Normalize to 'true' or 'false'
+            return 'true' if value.lower() in ('true', '1', 'yes', 'on') else 'false'
+
+        return value
