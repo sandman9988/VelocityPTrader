@@ -475,6 +475,63 @@ class EnterpriseDashboard:
             """Prometheus metrics endpoint"""
             return generate_latest()
             
+        @self.app.get("/api/settings")
+        async def get_all_settings():
+            """Get all system settings grouped by category"""
+            try:
+                from src.database.operations import AtomicDataOperations
+                ops = AtomicDataOperations()
+                settings = ops.get_all_settings(include_secrets=False)
+                return {"status": "success", "settings": settings}
+            except Exception as e:
+                logger.error(f"Failed to get settings: {e}")
+                return {"status": "error", "message": str(e)}
+
+        @self.app.get("/api/settings/{category}")
+        async def get_settings_by_category(category: str):
+            """Get settings for a specific category"""
+            try:
+                from src.database.operations import AtomicDataOperations
+                ops = AtomicDataOperations()
+                settings = ops.get_settings_by_category(category)
+                return {"status": "success", "category": category, "settings": settings}
+            except Exception as e:
+                logger.error(f"Failed to get settings for category {category}: {e}")
+                return {"status": "error", "message": str(e)}
+
+        @self.app.put("/api/settings/{category}/{key}")
+        async def update_setting(category: str, key: str, data: Dict[str, Any]):
+            """Update a setting value"""
+            try:
+                from src.database.operations import AtomicDataOperations
+                ops = AtomicDataOperations()
+                value = str(data.get('value', ''))
+                updated_by = data.get('updated_by', 'dashboard')
+
+                result = ops.update_setting(category, key, value, updated_by)
+                if result:
+                    return {"status": "success", "setting": result}
+                else:
+                    return {"status": "error", "message": "Failed to update setting"}
+            except Exception as e:
+                logger.error(f"Failed to update setting {category}/{key}: {e}")
+                return {"status": "error", "message": str(e)}
+
+        @self.app.post("/api/settings/initialize")
+        async def initialize_settings():
+            """Initialize default settings"""
+            try:
+                from src.database.operations import AtomicDataOperations
+                ops = AtomicDataOperations()
+                success = ops.initialize_default_settings()
+                if success:
+                    return {"status": "success", "message": "Default settings initialized"}
+                else:
+                    return {"status": "error", "message": "Failed to initialize settings"}
+            except Exception as e:
+                logger.error(f"Failed to initialize settings: {e}")
+                return {"status": "error", "message": str(e)}
+
         @self.app.get("/api/symbols")
         async def get_real_symbols():
             """Get REAL Vantage MT5 symbols with ATOMIC persistence"""
@@ -600,18 +657,18 @@ class EnterpriseDashboard:
             
     def _get_dashboard_html(self) -> str:
         """Generate enterprise dashboard HTML"""
-        
+
         return '''
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏭 Enterprise Trading Dashboard</title>
+    <title>Enterprise Trading Dashboard</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Segoe UI', system-ui, sans-serif; 
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             color: #e2e8f0;
             height: 100vh;
@@ -626,6 +683,40 @@ class EnterpriseDashboard:
             align-items: center;
         }
         .logo { font-size: 1.5rem; font-weight: bold; }
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .settings-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        .settings-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.02);
+        }
+        .settings-btn svg {
+            width: 18px;
+            height: 18px;
+            animation: none;
+        }
+        .settings-btn:hover svg {
+            animation: spin-slow 2s linear infinite;
+        }
+        @keyframes spin-slow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
         .status-badge {
             background: #10b981;
             color: white;
@@ -734,14 +825,315 @@ class EnterpriseDashboard:
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Settings Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-radius: 16px;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            width: 90%;
+            max-width: 900px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h2 {
+            font-size: 1.5rem;
+            color: #3b82f6;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .modal-close:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        .modal-body {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        .settings-tabs {
+            width: 200px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem 0;
+            border-right: 1px solid rgba(148, 163, 184, 0.1);
+        }
+        .settings-tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            color: #94a3b8;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .settings-tab:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: #e2e8f0;
+        }
+        .settings-tab.active {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            border-left-color: #3b82f6;
+        }
+        .settings-tab-icon {
+            font-size: 1.1rem;
+        }
+        .settings-content {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+        .settings-section {
+            display: none;
+        }
+        .settings-section.active {
+            display: block;
+        }
+        .settings-section h3 {
+            font-size: 1.1rem;
+            color: #60a5fa;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        }
+        .setting-item {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.05);
+            align-items: center;
+        }
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+        .setting-label {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        .setting-label .key {
+            font-weight: 500;
+            color: #e2e8f0;
+        }
+        .setting-label .description {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+        .setting-input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: #e2e8f0;
+            font-size: 0.9rem;
+            width: 100%;
+            transition: all 0.2s;
+        }
+        .setting-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        .setting-input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .setting-input[type="checkbox"] {
+            width: auto;
+            height: 20px;
+            width: 20px;
+            cursor: pointer;
+        }
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .toggle-switch.active {
+            background: #10b981;
+        }
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s;
+        }
+        .toggle-switch.active::after {
+            left: 26px;
+        }
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid rgba(148, 163, 184, 0.2);
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-secondary {
+            background: rgba(148, 163, 184, 0.2);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            color: #e2e8f0;
+        }
+        .btn-secondary:hover {
+            background: rgba(148, 163, 184, 0.3);
+        }
+        .btn-primary {
+            background: #3b82f6;
+            border: none;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        .btn-success {
+            background: #10b981;
+            border: none;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #059669;
+        }
+        .save-indicator {
+            font-size: 0.8rem;
+            color: #10b981;
+            display: none;
+        }
+        .save-indicator.show {
+            display: inline;
+            animation: fadeIn 0.3s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
     </style>
 </head>
 <body>
     <div class="header">
-        <div class="logo">🏭 Enterprise Trading Dashboard</div>
-        <div class="status-badge">
-            <div class="status-indicator"></div>
-            <span id="connection-status">Connecting...</span>
+        <div class="logo">VelocityPTrader Dashboard</div>
+        <div class="header-controls">
+            <button class="settings-btn" onclick="openSettings()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+                Settings
+            </button>
+            <div class="status-badge">
+                <div class="status-indicator"></div>
+                <span id="connection-status">Connecting...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settings-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    System Settings
+                </h2>
+                <button class="modal-close" onclick="closeSettings()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-tabs" id="settings-tabs">
+                    <div class="settings-tab active" data-tab="mt5">
+                        <span class="settings-tab-icon">&#128279;</span> MT5 Connection
+                    </div>
+                    <div class="settings-tab" data-tab="trading">
+                        <span class="settings-tab-icon">&#128200;</span> Trading
+                    </div>
+                    <div class="settings-tab" data-tab="risk">
+                        <span class="settings-tab-icon">&#128737;</span> Risk Management
+                    </div>
+                    <div class="settings-tab" data-tab="agents">
+                        <span class="settings-tab-icon">&#129302;</span> Agents
+                    </div>
+                    <div class="settings-tab" data-tab="monitoring">
+                        <span class="settings-tab-icon">&#128202;</span> Monitoring
+                    </div>
+                    <div class="settings-tab" data-tab="dashboard">
+                        <span class="settings-tab-icon">&#128187;</span> Dashboard
+                    </div>
+                    <div class="settings-tab" data-tab="database">
+                        <span class="settings-tab-icon">&#128451;</span> Database
+                    </div>
+                    <div class="settings-tab" data-tab="notifications">
+                        <span class="settings-tab-icon">&#128276;</span> Notifications
+                    </div>
+                </div>
+                <div class="settings-content" id="settings-content">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <div>Loading settings...</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <span class="save-indicator" id="save-indicator">Changes saved!</span>
+                <button class="btn btn-secondary" onclick="closeSettings()">Close</button>
+                <button class="btn btn-success" onclick="initializeSettings()">Reset to Defaults</button>
+            </div>
         </div>
     </div>
     
@@ -983,6 +1375,268 @@ class EnterpriseDashboard:
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', () => {
             new EnterpriseDashboardClient();
+        });
+
+        // ========== SETTINGS MANAGEMENT ==========
+
+        let currentSettings = {};
+        let activeTab = 'mt5';
+
+        function openSettings() {
+            document.getElementById('settings-modal').classList.add('active');
+            loadSettings();
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-modal').classList.remove('active');
+        }
+
+        // Close modal on overlay click
+        document.getElementById('settings-modal').addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) {
+                closeSettings();
+            }
+        });
+
+        // Tab switching
+        document.querySelectorAll('.settings-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                activeTab = tab.dataset.tab;
+                renderSettingsContent();
+            });
+        });
+
+        async function loadSettings() {
+            try {
+                const response = await fetch('/api/settings');
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    currentSettings = data.settings;
+                    renderSettingsContent();
+                } else {
+                    showSettingsError('Failed to load settings: ' + data.message);
+                }
+            } catch (error) {
+                showSettingsError('Network error loading settings: ' + error.message);
+            }
+        }
+
+        function renderSettingsContent() {
+            const container = document.getElementById('settings-content');
+            const settings = currentSettings[activeTab] || [];
+
+            if (settings.length === 0) {
+                container.innerHTML = `
+                    <div class="loading">
+                        <div>No settings found for this category.</div>
+                        <button class="btn btn-primary" onclick="initializeSettings()" style="margin-top: 1rem;">
+                            Initialize Default Settings
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            const categoryTitles = {
+                'mt5': 'MT5 Connection Settings',
+                'trading': 'Trading Configuration',
+                'risk': 'Risk Management',
+                'agents': 'Agent Settings',
+                'monitoring': 'Monitoring & Metrics',
+                'dashboard': 'Dashboard Settings',
+                'database': 'Database Configuration',
+                'notifications': 'Notification Settings'
+            };
+
+            let html = `<div class="settings-section active">
+                <h3>${categoryTitles[activeTab] || activeTab.toUpperCase()}</h3>`;
+
+            for (const setting of settings) {
+                html += renderSettingItem(setting);
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+
+            // Add event listeners for inputs
+            container.querySelectorAll('.setting-input').forEach(input => {
+                input.addEventListener('change', handleSettingChange);
+            });
+
+            container.querySelectorAll('.toggle-switch').forEach(toggle => {
+                toggle.addEventListener('click', handleToggleClick);
+            });
+        }
+
+        function renderSettingItem(setting) {
+            const inputId = `setting-${setting.category}-${setting.key}`;
+            let inputHtml = '';
+
+            if (setting.value_type === 'bool') {
+                const isActive = setting.value === true || setting.value === 'true';
+                inputHtml = `
+                    <div class="toggle-switch ${isActive ? 'active' : ''}"
+                         data-category="${setting.category}"
+                         data-key="${setting.key}"
+                         data-value="${isActive}">
+                    </div>
+                `;
+            } else if (setting.is_secret) {
+                inputHtml = `
+                    <input type="password"
+                           class="setting-input"
+                           id="${inputId}"
+                           data-category="${setting.category}"
+                           data-key="${setting.key}"
+                           value="${setting.value || ''}"
+                           placeholder="Enter ${setting.key}..."
+                           ${!setting.is_editable ? 'disabled' : ''}>
+                `;
+            } else if (setting.value_type === 'int' || setting.value_type === 'float') {
+                const step = setting.value_type === 'float' ? '0.001' : '1';
+                inputHtml = `
+                    <input type="number"
+                           class="setting-input"
+                           id="${inputId}"
+                           data-category="${setting.category}"
+                           data-key="${setting.key}"
+                           value="${setting.value || ''}"
+                           step="${step}"
+                           ${setting.min_value !== null ? 'min="' + setting.min_value + '"' : ''}
+                           ${setting.max_value !== null ? 'max="' + setting.max_value + '"' : ''}
+                           ${!setting.is_editable ? 'disabled' : ''}>
+                `;
+            } else {
+                inputHtml = `
+                    <input type="text"
+                           class="setting-input"
+                           id="${inputId}"
+                           data-category="${setting.category}"
+                           data-key="${setting.key}"
+                           value="${setting.value || ''}"
+                           ${!setting.is_editable ? 'disabled' : ''}>
+                `;
+            }
+
+            return `
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <span class="key">${formatKey(setting.key)}</span>
+                        <span class="description">${setting.description || ''}</span>
+                    </div>
+                    ${inputHtml}
+                </div>
+            `;
+        }
+
+        function formatKey(key) {
+            return key.split('_').map(word =>
+                word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ');
+        }
+
+        async function handleSettingChange(event) {
+            const input = event.target;
+            const category = input.dataset.category;
+            const key = input.dataset.key;
+            const value = input.value;
+
+            await updateSetting(category, key, value);
+        }
+
+        async function handleToggleClick(event) {
+            const toggle = event.target;
+            const category = toggle.dataset.category;
+            const key = toggle.dataset.key;
+            const currentValue = toggle.dataset.value === 'true';
+            const newValue = !currentValue;
+
+            toggle.classList.toggle('active');
+            toggle.dataset.value = newValue.toString();
+
+            await updateSetting(category, key, newValue.toString());
+        }
+
+        async function updateSetting(category, key, value) {
+            try {
+                const response = await fetch(`/api/settings/${category}/${key}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ value: value, updated_by: 'dashboard' })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    showSaveIndicator();
+                    // Update local cache
+                    const idx = currentSettings[category]?.findIndex(s => s.key === key);
+                    if (idx !== undefined && idx >= 0) {
+                        currentSettings[category][idx] = data.setting;
+                    }
+                } else {
+                    alert('Failed to update setting: ' + data.message);
+                }
+            } catch (error) {
+                alert('Network error updating setting: ' + error.message);
+            }
+        }
+
+        async function initializeSettings() {
+            if (!confirm('This will reset all settings to their default values. Continue?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/settings/initialize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    showSaveIndicator();
+                    loadSettings();
+                } else {
+                    alert('Failed to initialize settings: ' + data.message);
+                }
+            } catch (error) {
+                alert('Network error initializing settings: ' + error.message);
+            }
+        }
+
+        function showSaveIndicator() {
+            const indicator = document.getElementById('save-indicator');
+            indicator.classList.add('show');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 2000);
+        }
+
+        function showSettingsError(message) {
+            document.getElementById('settings-content').innerHTML = `
+                <div class="loading error-message">
+                    <div>${message}</div>
+                    <button class="btn btn-primary" onclick="loadSettings()" style="margin-top: 1rem;">
+                        Retry
+                    </button>
+                </div>
+            `;
+        }
+
+        // Keyboard shortcut to open settings (Ctrl+,)
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === ',') {
+                e.preventDefault();
+                openSettings();
+            }
+            if (e.key === 'Escape') {
+                closeSettings();
+            }
         });
     </script>
 </body>
