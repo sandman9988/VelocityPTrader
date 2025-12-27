@@ -4,7 +4,6 @@ AI-Powered Workflow Recovery Agent
 Uses AI to diagnose failures and generate automated fixes.
 """
 
-import json
 import re
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
