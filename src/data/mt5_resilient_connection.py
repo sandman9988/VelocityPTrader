@@ -137,10 +137,15 @@ class MT5ResilientConnection(ConnectionManagerBase):
                     logger.debug("ZMQ not available, using file-based connection")
                 except Exception as e:
                     logger.warning("ZMQ connection failed", error=str(e))
-                    # Clean up context on failure
-                    if self._zmq_context:
-                        self._zmq_context.term()
-                        self._zmq_context = None
+                finally:
+                    # Clean up socket and context on any failure
+                    if not self._is_initialized or self._zmq_socket is None:
+                        if self._zmq_socket:
+                            self._zmq_socket.close()
+                            self._zmq_socket = None
+                        if self._zmq_context:
+                            self._zmq_context.term()
+                            self._zmq_context = None
 
             # Fallback to file-based monitoring
             if self.data_file.exists():
