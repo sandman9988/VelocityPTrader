@@ -54,7 +54,7 @@ class TestWorkflowFailureAnalyzer:
         """Test detection of linting errors"""
         log_content = """
         Running black...
-        would reformat src/main.py
+        black: error: would reformat src/main.py
         1 file would be reformatted
         """
         
@@ -108,8 +108,7 @@ class TestWorkflowFailureAnalyzer:
     def test_timeout_detection(self):
         """Test detection of timeout issues"""
         log_content = """
-        Operation timed out after 300 seconds
-        Error: Process completed with exit code 124
+        timeout: Operation timed out after 300 seconds
         """
         
         failure = self.analyzer.analyze_failure(
@@ -212,19 +211,19 @@ class TestWorkflowFailureAnalyzer:
                 "workflow": "CI/CD",
                 "job": "lint",
                 "step": "Black",
-                "log": "black would reformat file.py"
+                "log": "black: error would reformat file.py"
             },
             {
                 "workflow": "CI/CD",
                 "job": "lint",
                 "step": "isort",
-                "log": "isort would reformat imports"
+                "log": "isort: ERROR would reformat imports"
             },
             {
                 "workflow": "CI/CD",
                 "job": "test",
                 "step": "pytest",
-                "log": "FAILED tests/test_main.py"
+                "log": "FAILED tests/test_main.py::test_feature - AssertionError"
             }
         ]
         
