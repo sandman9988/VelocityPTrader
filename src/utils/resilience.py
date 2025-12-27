@@ -199,39 +199,38 @@ class CircuitBreakerError(Exception):
 def with_circuit_breaker(circuit_breaker: CircuitBreaker):
     """Decorator to wrap function with circuit breaker protection"""
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs) -> T:
-            if not circuit_breaker.allow_request():
-                raise CircuitBreakerError(
-                    f"Circuit breaker '{circuit_breaker.name}' is open"
-                )
-
-            try:
-                result = func(*args, **kwargs)
-                circuit_breaker.record_success()
-                return result
-            except Exception as e:
-                circuit_breaker.record_failure(str(e))
-                raise
-
-        @functools.wraps(func)
-        async def async_wrapper(*args, **kwargs) -> T:
-            if not circuit_breaker.allow_request():
-                raise CircuitBreakerError(
-                    f"Circuit breaker '{circuit_breaker.name}' is open"
-                )
-
-            try:
-                result = await func(*args, **kwargs)
-                circuit_breaker.record_success()
-                return result
-            except Exception as e:
-                circuit_breaker.record_failure(str(e))
-                raise
-
         if asyncio.iscoroutinefunction(func):
+            @functools.wraps(func)
+            async def async_wrapper(*args, **kwargs) -> T:
+                if not circuit_breaker.allow_request():
+                    raise CircuitBreakerError(
+                        f"Circuit breaker '{circuit_breaker.name}' is open"
+                    )
+
+                try:
+                    result = await func(*args, **kwargs)
+                    circuit_breaker.record_success()
+                    return result
+                except Exception as e:
+                    circuit_breaker.record_failure(str(e))
+                    raise
             return async_wrapper
-        return wrapper
+        else:
+            @functools.wraps(func)
+            def wrapper(*args, **kwargs) -> T:
+                if not circuit_breaker.allow_request():
+                    raise CircuitBreakerError(
+                        f"Circuit breaker '{circuit_breaker.name}' is open"
+                    )
+
+                try:
+                    result = func(*args, **kwargs)
+                    circuit_breaker.record_success()
+                    return result
+                except Exception as e:
+                    circuit_breaker.record_failure(str(e))
+                    raise
+            return wrapper
 
     return decorator
 
