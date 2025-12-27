@@ -16,10 +16,7 @@ from src.utils.workflow_failure_analyzer import (
     WorkflowFailureAnalyzer,
     FailureCategory,
     RecoverySeverity,
-    FailurePattern
 )
-
-
 class TestWorkflowFailureAnalyzer:
     """Test suite for WorkflowFailureAnalyzer"""
     
