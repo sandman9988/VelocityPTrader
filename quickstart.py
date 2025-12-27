@@ -174,11 +174,11 @@ class VelocityStartup:
             sniper = ops.get_setting("agents", "sniper_enabled")
 
             agents_status = {
-                "BERSERKER": berserker.get("value", "true") if berserker else "true",
-                "SNIPER": sniper.get("value", "true") if sniper else "true"
+                "BERSERKER": str(berserker.get("value", "true")) if berserker else "true",
+                "SNIPER": str(sniper.get("value", "true")) if sniper else "true"
             }
 
-            enabled_count = sum(1 for v in agents_status.values() if v.lower() == "true")
+            enabled_count = sum(1 for v in agents_status.values() if str(v).lower() == "true")
             message = f"Agent configuration loaded ({enabled_count}/2 agents enabled)"
 
             self.log(message, StartupPhase.AGENTS, "SUCCESS")

@@ -165,12 +165,7 @@ class DatabaseManager:
                 echo_pool=False,
                 connect_args={
                     "connect_timeout": 10,
-                    "command_timeout": self.config.statement_timeout // 1000,
-                    "server_settings": {
-                        "application_name": self.config.application_name,
-                        "statement_timeout": str(self.config.statement_timeout),
-                        "idle_in_transaction_session_timeout": str(self.config.idle_in_transaction_timeout),
-                    }
+                    "options": f"-c statement_timeout={self.config.statement_timeout} -c idle_in_transaction_session_timeout={self.config.idle_in_transaction_timeout} -c application_name={self.config.application_name}"
                 }
             )
             
@@ -232,14 +227,10 @@ class DatabaseManager:
             with dbapi_connection.cursor() as cursor:
                 # Set timezone
                 cursor.execute("SET timezone = 'UTC'")
-                
-                # Enable constraint checking
-                cursor.execute("SET check_function_bodies = true")
-                
-                # Performance settings
-                cursor.execute("SET synchronous_commit = 'on'")  # Ensure durability
-                cursor.execute("SET wal_sync_method = 'fsync'")
-                
+
+                # Performance settings - synchronous_commit ensures durability
+                cursor.execute("SET synchronous_commit = 'on'")
+
                 logger.debug("PostgreSQL connection configured")
         
         @event.listens_for(self.engine, "checkout")
