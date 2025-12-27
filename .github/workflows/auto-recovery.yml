@@ -276,7 +276,7 @@ jobs:
       - name: Create issue for manual intervention
         if: |
           steps.analyze.outputs.failure_detected == 'true' &&
-          (steps.recovery.outputs.can_auto_recover == 'false' || steps.recovery.outputs.requires_review == 'true')
+          steps.recovery.outputs.can_auto_recover == 'false'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
