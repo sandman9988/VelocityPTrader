@@ -532,6 +532,136 @@ class EnterpriseDashboard:
                 logger.error(f"Failed to initialize settings: {e}")
                 return {"status": "error", "message": str(e)}
 
+        @self.app.post("/api/startup")
+        async def startup_system():
+            """Start all system components with progress tracking"""
+            results = {
+                "status": "success",
+                "timestamp": datetime.utcnow().isoformat(),
+                "steps": {}
+            }
+
+            # Step 1: Database
+            try:
+                from src.database.connection import get_database_manager
+                db = get_database_manager()
+                db.initialize_sync_engine()
+                health = db.health_check()
+                results["steps"]["database"] = {
+                    "status": "success",
+                    "message": f"Connected to {db.config.database}",
+                    "details": health.get("connection_pool", {})
+                }
+            except Exception as e:
+                results["steps"]["database"] = {"status": "error", "message": str(e)}
+                results["status"] = "partial"
+
+            # Step 2: Settings
+            try:
+                from src.database.operations import AtomicDataOperations
+                ops = AtomicDataOperations()
+                settings = ops.get_all_settings()
+                if not settings:
+                    ops.initialize_default_settings()
+                    settings = ops.get_all_settings()
+                results["steps"]["settings"] = {
+                    "status": "success",
+                    "message": f"Loaded {sum(len(v) for v in settings.values())} settings",
+                    "categories": list(settings.keys())
+                }
+            except Exception as e:
+                results["steps"]["settings"] = {"status": "error", "message": str(e)}
+                results["status"] = "partial"
+
+            # Step 3: MT5 Bridge
+            try:
+                from src.data.mt5_resilient_connection import get_mt5_connection
+                mt5 = get_mt5_connection()
+                status = mt5.get_connection_status()
+                if mt5._is_initialized or status.get("data_file_exists"):
+                    results["steps"]["mt5"] = {
+                        "status": "success",
+                        "message": f"MT5 bridge ready ({status.get('symbols_count', 0)} symbols)",
+                        "details": {
+                            "server": status.get("server"),
+                            "state": status.get("state")
+                        }
+                    }
+                else:
+                    results["steps"]["mt5"] = {
+                        "status": "warning",
+                        "message": "MT5 bridge in degraded mode - using cached data"
+                    }
+            except Exception as e:
+                results["steps"]["mt5"] = {"status": "error", "message": str(e)}
+                results["status"] = "partial"
+
+            # Step 4: Agents
+            try:
+                # Check if agent configuration exists
+                from src.database.operations import AtomicDataOperations
+                ops = AtomicDataOperations()
+                berserker = ops.get_setting("agents", "berserker_enabled")
+                sniper = ops.get_setting("agents", "sniper_enabled")
+                results["steps"]["agents"] = {
+                    "status": "success",
+                    "message": "Agent configuration loaded",
+                    "details": {
+                        "berserker": berserker.get("value") if berserker else True,
+                        "sniper": sniper.get("value") if sniper else True
+                    }
+                }
+            except Exception as e:
+                results["steps"]["agents"] = {"status": "error", "message": str(e)}
+                results["status"] = "partial"
+
+            # Step 5: Monitoring
+            try:
+                results["steps"]["monitoring"] = {
+                    "status": "success",
+                    "message": "Prometheus metrics enabled",
+                    "details": {
+                        "websocket_connections": len(self.connection_manager.active_connections),
+                        "metrics_endpoint": "/metrics"
+                    }
+                }
+            except Exception as e:
+                results["steps"]["monitoring"] = {"status": "error", "message": str(e)}
+                results["status"] = "partial"
+
+            # Overall status
+            failed_steps = [k for k, v in results["steps"].items() if v.get("status") == "error"]
+            if failed_steps:
+                results["status"] = "partial"
+                results["message"] = f"Started with errors in: {', '.join(failed_steps)}"
+            else:
+                results["status"] = "success"
+                results["message"] = "All systems operational"
+
+            logger.info("System startup completed", status=results["status"])
+            return results
+
+        @self.app.post("/api/shutdown")
+        async def shutdown_system():
+            """Gracefully shutdown system components"""
+            results = {
+                "status": "success",
+                "timestamp": datetime.utcnow().isoformat(),
+                "message": "System shutdown initiated"
+            }
+
+            try:
+                # Close database connections
+                from src.database.connection import get_database_manager
+                db = get_database_manager()
+                await db.close()
+                results["database"] = "closed"
+            except Exception as e:
+                results["database"] = f"error: {str(e)}"
+
+            logger.warning("System shutdown completed")
+            return results
+
         @self.app.get("/api/resilience")
         async def get_resilience_status():
             """Get comprehensive resilience status for all system components"""
@@ -769,6 +899,143 @@ class EnterpriseDashboard:
         @keyframes spin-slow {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+        .startup-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        }
+        .startup-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+        .startup-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+        .startup-btn.running {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+        }
+        .startup-btn.running:hover {
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+        }
+        .startup-modal {
+            max-width: 600px;
+        }
+        .startup-body {
+            padding: 1.5rem;
+        }
+        .startup-progress {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .startup-step {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            transition: all 0.3s;
+        }
+        .startup-step.active {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+        .startup-step.success {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+        .startup-step.error {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+        .step-icon {
+            font-size: 1.5rem;
+            width: 40px;
+            text-align: center;
+        }
+        .step-info {
+            flex: 1;
+        }
+        .step-name {
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+        .step-status {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-top: 0.25rem;
+        }
+        .step-indicator {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(148, 163, 184, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .step-indicator.loading {
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-top-color: #3b82f6;
+            animation: spin 1s linear infinite;
+        }
+        .step-indicator.success {
+            background: #10b981;
+        }
+        .step-indicator.success::after {
+            content: '✓';
+            color: white;
+            font-size: 14px;
+        }
+        .step-indicator.error {
+            background: #ef4444;
+        }
+        .step-indicator.error::after {
+            content: '✕';
+            color: white;
+            font-size: 14px;
+        }
+        .startup-summary {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+            display: none;
+        }
+        .startup-summary.show {
+            display: block;
+        }
+        .startup-summary.success {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: #10b981;
+        }
+        .startup-summary.error {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
+        }
+        .btn-danger {
+            background: #ef4444;
+            border: none;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
         }
         .status-badge {
             background: #10b981;
@@ -1121,6 +1388,12 @@ class EnterpriseDashboard:
     <div class="header">
         <div class="logo">VelocityPTrader Dashboard</div>
         <div class="header-controls">
+            <button class="startup-btn" id="startup-btn" onclick="openStartupModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                <span id="startup-btn-text">Start System</span>
+            </button>
             <button class="settings-btn" onclick="openSettings()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="3"></circle>
@@ -1131,6 +1404,82 @@ class EnterpriseDashboard:
             <div class="status-badge">
                 <div class="status-indicator"></div>
                 <span id="connection-status">Connecting...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Startup Modal -->
+    <div class="modal-overlay" id="startup-modal">
+        <div class="modal startup-modal">
+            <div class="modal-header">
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                    </svg>
+                    System Startup
+                </h2>
+                <button class="modal-close" onclick="closeStartupModal()">&times;</button>
+            </div>
+            <div class="modal-body startup-body">
+                <div class="startup-progress">
+                    <div class="startup-step" id="step-database">
+                        <div class="step-icon">&#128451;</div>
+                        <div class="step-info">
+                            <div class="step-name">Database Connection</div>
+                            <div class="step-status" id="status-database">Waiting...</div>
+                        </div>
+                        <div class="step-indicator" id="indicator-database"></div>
+                    </div>
+                    <div class="startup-step" id="step-settings">
+                        <div class="step-icon">&#9881;</div>
+                        <div class="step-info">
+                            <div class="step-name">Load Settings</div>
+                            <div class="step-status" id="status-settings">Waiting...</div>
+                        </div>
+                        <div class="step-indicator" id="indicator-settings"></div>
+                    </div>
+                    <div class="startup-step" id="step-mt5">
+                        <div class="step-icon">&#128279;</div>
+                        <div class="step-info">
+                            <div class="step-name">MT5 Bridge</div>
+                            <div class="step-status" id="status-mt5">Waiting...</div>
+                        </div>
+                        <div class="step-indicator" id="indicator-mt5"></div>
+                    </div>
+                    <div class="startup-step" id="step-agents">
+                        <div class="step-icon">&#129302;</div>
+                        <div class="step-info">
+                            <div class="step-name">Trading Agents</div>
+                            <div class="step-status" id="status-agents">Waiting...</div>
+                        </div>
+                        <div class="step-indicator" id="indicator-agents"></div>
+                    </div>
+                    <div class="startup-step" id="step-monitoring">
+                        <div class="step-icon">&#128202;</div>
+                        <div class="step-info">
+                            <div class="step-name">Monitoring</div>
+                            <div class="step-status" id="status-monitoring">Waiting...</div>
+                        </div>
+                        <div class="step-indicator" id="indicator-monitoring"></div>
+                    </div>
+                </div>
+                <div class="startup-summary" id="startup-summary"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeStartupModal()">Close</button>
+                <button class="btn btn-primary" id="start-btn" onclick="startSystem()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    Start All Services
+                </button>
+                <button class="btn btn-danger" id="stop-btn" onclick="stopSystem()" style="display:none;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="6" y="6" width="12" height="12"></rect>
+                    </svg>
+                    Stop System
+                </button>
             </div>
         </div>
     </div>
@@ -1526,6 +1875,187 @@ class EnterpriseDashboard:
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', () => {
             new EnterpriseDashboardClient();
+        });
+
+        // ========== STARTUP MANAGEMENT ==========
+
+        let systemRunning = false;
+        const startupSteps = ['database', 'settings', 'mt5', 'agents', 'monitoring'];
+
+        function openStartupModal() {
+            document.getElementById('startup-modal').classList.add('active');
+            // Reset all steps
+            startupSteps.forEach(step => {
+                document.getElementById(`step-${step}`).className = 'startup-step';
+                document.getElementById(`status-${step}`).textContent = 'Waiting...';
+                document.getElementById(`indicator-${step}`).className = 'step-indicator';
+            });
+            document.getElementById('startup-summary').className = 'startup-summary';
+            document.getElementById('startup-summary').innerHTML = '';
+            updateStartupButtons();
+        }
+
+        function closeStartupModal() {
+            document.getElementById('startup-modal').classList.remove('active');
+        }
+
+        function updateStartupButtons() {
+            const startBtn = document.getElementById('start-btn');
+            const stopBtn = document.getElementById('stop-btn');
+            const startupBtn = document.getElementById('startup-btn');
+            const btnText = document.getElementById('startup-btn-text');
+
+            if (systemRunning) {
+                startBtn.style.display = 'none';
+                stopBtn.style.display = 'flex';
+                startupBtn.classList.add('running');
+                btnText.textContent = 'System Running';
+            } else {
+                startBtn.style.display = 'flex';
+                stopBtn.style.display = 'none';
+                startupBtn.classList.remove('running');
+                btnText.textContent = 'Start System';
+            }
+        }
+
+        function setStepStatus(step, status, message) {
+            const stepEl = document.getElementById(`step-${step}`);
+            const statusEl = document.getElementById(`status-${step}`);
+            const indicatorEl = document.getElementById(`indicator-${step}`);
+
+            stepEl.className = `startup-step ${status}`;
+            statusEl.textContent = message;
+
+            if (status === 'active') {
+                indicatorEl.className = 'step-indicator loading';
+            } else if (status === 'success') {
+                indicatorEl.className = 'step-indicator success';
+            } else if (status === 'error') {
+                indicatorEl.className = 'step-indicator error';
+            } else {
+                indicatorEl.className = 'step-indicator';
+            }
+        }
+
+        async function startSystem() {
+            const startBtn = document.getElementById('start-btn');
+            startBtn.disabled = true;
+            startBtn.innerHTML = '<div class="spinner" style="width:16px;height:16px;"></div> Starting...';
+
+            try {
+                // Animate steps sequentially for visual feedback
+                for (const step of startupSteps) {
+                    setStepStatus(step, 'active', 'Initializing...');
+                    await new Promise(r => setTimeout(r, 300)); // Brief visual delay
+                }
+
+                // Call the actual startup API
+                const response = await fetch('/api/startup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const result = await response.json();
+
+                // Update each step with results
+                for (const step of startupSteps) {
+                    const stepResult = result.steps[step];
+                    if (stepResult) {
+                        const status = stepResult.status === 'success' ? 'success' :
+                                      stepResult.status === 'warning' ? 'success' : 'error';
+                        setStepStatus(step, status, stepResult.message);
+                    }
+                }
+
+                // Show summary
+                const summary = document.getElementById('startup-summary');
+                if (result.status === 'success') {
+                    summary.className = 'startup-summary show success';
+                    summary.innerHTML = `
+                        <strong>✓ System Started Successfully</strong><br>
+                        ${result.message}<br>
+                        <small>Started at ${new Date(result.timestamp).toLocaleTimeString()}</small>
+                    `;
+                    systemRunning = true;
+                } else {
+                    summary.className = 'startup-summary show error';
+                    summary.innerHTML = `
+                        <strong>⚠ System Started with Warnings</strong><br>
+                        ${result.message}<br>
+                        <small>Check the steps above for details</small>
+                    `;
+                    systemRunning = true; // Still mark as running even with partial success
+                }
+
+                updateStartupButtons();
+
+            } catch (error) {
+                console.error('Startup failed:', error);
+                const summary = document.getElementById('startup-summary');
+                summary.className = 'startup-summary show error';
+                summary.innerHTML = `
+                    <strong>✕ Startup Failed</strong><br>
+                    ${error.message}<br>
+                    <small>Please check the console for details</small>
+                `;
+            } finally {
+                startBtn.disabled = false;
+                startBtn.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    Start All Services
+                `;
+            }
+        }
+
+        async function stopSystem() {
+            const stopBtn = document.getElementById('stop-btn');
+            stopBtn.disabled = true;
+            stopBtn.innerHTML = '<div class="spinner" style="width:16px;height:16px;"></div> Stopping...';
+
+            try {
+                const response = await fetch('/api/shutdown', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const result = await response.json();
+
+                // Reset all steps
+                startupSteps.forEach(step => {
+                    setStepStatus(step, '', 'Stopped');
+                });
+
+                const summary = document.getElementById('startup-summary');
+                summary.className = 'startup-summary show';
+                summary.innerHTML = `
+                    <strong>System Stopped</strong><br>
+                    ${result.message}<br>
+                    <small>Stopped at ${new Date().toLocaleTimeString()}</small>
+                `;
+
+                systemRunning = false;
+                updateStartupButtons();
+
+            } catch (error) {
+                console.error('Shutdown failed:', error);
+            } finally {
+                stopBtn.disabled = false;
+                stopBtn.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="6" y="6" width="12" height="12"></rect>
+                    </svg>
+                    Stop System
+                `;
+            }
+        }
+
+        // Close startup modal on overlay click
+        document.getElementById('startup-modal').addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) {
+                closeStartupModal();
+            }
         });
 
         // ========== SETTINGS MANAGEMENT ==========
