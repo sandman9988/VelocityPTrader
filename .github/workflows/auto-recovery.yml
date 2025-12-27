@@ -1,0 +1,348 @@
+name: Workflow Auto-Recovery
+
+on:
+  workflow_run:
+    workflows: ["Comprehensive CI/CD Pipeline", "PostgreSQL Enterprise Testing", "CodeQL Security Analysis"]
+    types:
+      - completed
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+  issues: write
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  analyze-and-recover:
+    name: Analyze Failure and Auto-Recover
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+          fetch-depth: 0
+      
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install requests PyGithub
+      
+      - name: Download workflow logs
+        id: download_logs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Get workflow run details
+          WORKFLOW_ID="${{ github.event.workflow_run.id }}"
+          REPO="${{ github.repository }}"
+          
+          echo "📥 Downloading logs for workflow run: $WORKFLOW_ID"
+          
+          # Download logs using GitHub CLI
+          gh run download $WORKFLOW_ID --repo $REPO --dir workflow-logs || true
+          
+          # List downloaded files
+          echo "Downloaded files:"
+          ls -la workflow-logs/ || echo "No logs downloaded"
+          
+          # Set output
+          echo "logs_path=workflow-logs" >> $GITHUB_OUTPUT
+      
+      - name: Analyze workflow failure
+        id: analyze
+        run: |
+          python << 'EOF'
+          import os
+          import json
+          import sys
+          from pathlib import Path
+          from datetime import datetime
+          
+          sys.path.insert(0, str(Path.cwd()))
+          from src.utils.workflow_failure_analyzer import WorkflowFailureAnalyzer
+          
+          analyzer = WorkflowFailureAnalyzer()
+          
+          # Read workflow logs
+          logs_dir = Path("workflow-logs")
+          failures = []
+          
+          if logs_dir.exists():
+              for log_file in logs_dir.rglob("*.txt"):
+                  try:
+                      log_content = log_file.read_text()
+                      
+                      # Parse job and step name from file path
+                      parts = log_file.parts
+                      job_name = parts[-2] if len(parts) > 1 else "unknown"
+                      step_name = log_file.stem
+                      
+                      # Analyze failure
+                      failure = analyzer.analyze_failure(
+                          workflow_name="${{ github.event.workflow_run.name }}",
+                          job_name=job_name,
+                          step_name=step_name,
+                          log_content=log_content,
+                          timestamp=datetime.utcnow()
+                      )
+                      
+                      failures.append(failure)
+                      
+                  except Exception as e:
+                      print(f"Error analyzing {log_file}: {e}")
+          
+          # Generate analysis report
+          if failures:
+              # Get the most critical failure
+              failure = max(failures, key=lambda f: (
+                  f.severity.value == "critical",
+                  f.severity.value == "high",
+                  f.severity.value == "medium",
+                  not f.auto_fixable
+              ))
+              
+              report = analyzer.generate_recovery_report(failure)
+              
+              # Save report
+              with open("failure_report.json", "w") as f:
+                  json.dump(report, f, indent=2)
+              
+              # Set outputs
+              with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+                  f.write(f"failure_detected=true\n")
+                  f.write(f"category={failure.category.value}\n")
+                  f.write(f"severity={failure.severity.value}\n")
+                  f.write(f"auto_fixable={str(failure.auto_fixable).lower()}\n")
+              
+              print("✅ Failure analysis completed")
+              print(f"Category: {failure.category.value}")
+              print(f"Severity: {failure.severity.value}")
+              print(f"Auto-fixable: {failure.auto_fixable}")
+          else:
+              with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+                  f.write("failure_detected=false\n")
+              print("⚠️ No failure logs found to analyze")
+          EOF
+      
+      - name: Generate recovery actions
+        id: recovery
+        if: steps.analyze.outputs.failure_detected == 'true'
+        run: |
+          python << 'EOF'
+          import os
+          import json
+          import sys
+          from pathlib import Path
+          
+          sys.path.insert(0, str(Path.cwd()))
+          from src.utils.workflow_failure_analyzer import WorkflowFailure
+          from src.utils.ai_recovery_agent import AIRecoveryAgent
+          from datetime import datetime
+          
+          # Load failure report
+          with open("failure_report.json", "r") as f:
+              report = json.load(f)
+          
+          # Reconstruct failure object (simplified)
+          from src.utils.workflow_failure_analyzer import FailureCategory, RecoverySeverity
+          
+          # Create agent
+          agent = AIRecoveryAgent()
+          
+          # For now, generate generic recovery report
+          print("🤖 AI Recovery Agent activated")
+          print(f"Category: {report['category']}")
+          print(f"Auto-fixable: {report['auto_fixable']}")
+          
+          recovery_actions = report.get('recovery_actions', [])
+          
+          # Save recovery actions
+          with open("recovery_actions.json", "w") as f:
+              json.dump({
+                  "can_auto_recover": report['auto_fixable'],
+                  "actions": recovery_actions,
+                  "requires_review": report['severity'] in ['high', 'critical']
+              }, f, indent=2)
+          
+          # Set outputs
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"can_auto_recover={str(report['auto_fixable']).lower()}\n")
+              f.write(f"requires_review={str(report['severity'] in ['high', 'critical']).lower()}\n")
+          
+          print("✅ Recovery actions generated")
+          EOF
+      
+      - name: Execute auto-recovery (Linting Errors)
+        if: |
+          steps.analyze.outputs.failure_detected == 'true' &&
+          steps.analyze.outputs.category == 'linting_error' &&
+          steps.recovery.outputs.can_auto_recover == 'true'
+        run: |
+          echo "🔧 Executing auto-recovery for linting errors..."
+          
+          # Run formatters
+          pip install black isort ruff
+          
+          black src/ tests/ || true
+          isort src/ tests/ || true
+          ruff check --fix src/ tests/ || true
+          
+          echo "✅ Formatters executed"
+      
+      - name: Execute auto-recovery (Dependency Issues)
+        if: |
+          steps.analyze.outputs.failure_detected == 'true' &&
+          steps.analyze.outputs.category == 'dependency_issue' &&
+          steps.recovery.outputs.can_auto_recover == 'true'
+        run: |
+          echo "🔧 Auto-recovery for dependency issues..."
+          echo "⚠️ Manual intervention recommended for dependency changes"
+      
+      - name: Create recovery PR
+        if: |
+          steps.analyze.outputs.failure_detected == 'true' &&
+          steps.recovery.outputs.can_auto_recover == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Configure git
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Create branch for recovery
+          BRANCH_NAME="auto-recovery/workflow-${{ github.event.workflow_run.id }}"
+          git checkout -b "$BRANCH_NAME"
+          
+          # Check if there are changes
+          if git diff --quiet; then
+            echo "⚠️ No changes to commit"
+            exit 0
+          fi
+          
+          # Commit changes
+          git add .
+          git commit -m "🤖 Auto-recovery: Fix workflow failures
+          
+          Workflow: ${{ github.event.workflow_run.name }}
+          Category: ${{ steps.analyze.outputs.category }}
+          Severity: ${{ steps.analyze.outputs.severity }}
+          
+          Auto-generated by workflow auto-recovery system."
+          
+          # Push branch
+          git push origin "$BRANCH_NAME"
+          
+          # Create PR
+          gh pr create \
+            --title "🤖 Auto-recovery: Fix ${{ steps.analyze.outputs.category }}" \
+            --body "$(cat << 'EOFPR'
+          ## 🤖 Automated Workflow Failure Recovery
+          
+          This PR was automatically generated to fix workflow failures.
+          
+          ### Failure Details
+          - **Workflow:** ${{ github.event.workflow_run.name }}
+          - **Run ID:** ${{ github.event.workflow_run.id }}
+          - **Category:** ${{ steps.analyze.outputs.category }}
+          - **Severity:** ${{ steps.analyze.outputs.severity }}
+          - **Branch:** ${{ github.event.workflow_run.head_branch }}
+          
+          ### Recovery Actions
+          See the analysis report for detailed recovery actions taken.
+          
+          ### Review Required
+          ${{ steps.recovery.outputs.requires_review == 'true' && '⚠️ This PR requires manual review before merging.' || '✅ This PR can be auto-merged if CI passes.' }}
+          
+          ---
+          *Auto-generated by Workflow Auto-Recovery System*
+          EOFPR
+          )" \
+            --base "${{ github.event.workflow_run.head_branch }}" \
+            --label "auto-recovery" \
+            --label "workflow-fix"
+      
+      - name: Create issue for manual intervention
+        if: |
+          steps.analyze.outputs.failure_detected == 'true' &&
+          (steps.recovery.outputs.can_auto_recover == 'false' || steps.recovery.outputs.requires_review == 'true')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "🚨 Workflow Failure Requires Manual Intervention: ${{ github.event.workflow_run.name }}" \
+            --body "$(cat << 'EOFISSUE'
+          ## Workflow Failure Alert
+          
+          A workflow failure has been detected that requires manual intervention.
+          
+          ### Failure Details
+          - **Workflow:** ${{ github.event.workflow_run.name }}
+          - **Run ID:** ${{ github.event.workflow_run.id }}
+          - **Run URL:** ${{ github.event.workflow_run.html_url }}
+          - **Category:** ${{ steps.analyze.outputs.category }}
+          - **Severity:** ${{ steps.analyze.outputs.severity }}
+          - **Branch:** ${{ github.event.workflow_run.head_branch }}
+          - **Commit:** ${{ github.event.workflow_run.head_sha }}
+          
+          ### Analysis
+          Auto-recovery analysis has been performed. See the workflow run for detailed logs and recovery suggestions.
+          
+          ### Action Required
+          Please review the failure and apply necessary fixes manually.
+          
+          ---
+          *Auto-generated by Workflow Auto-Recovery System*
+          EOFISSUE
+          )" \
+            --label "workflow-failure" \
+            --label "needs-investigation"
+      
+      - name: Upload analysis artifacts
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: failure-analysis-${{ github.event.workflow_run.id }}
+          path: |
+            failure_report.json
+            recovery_actions.json
+            workflow-logs/
+          retention-days: 30
+      
+      - name: Summary
+        if: always()
+        run: |
+          echo "## 🤖 Workflow Auto-Recovery Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ steps.analyze.outputs.failure_detected }}" = "true" ]; then
+            echo "### Failure Detected" >> $GITHUB_STEP_SUMMARY
+            echo "- **Category:** ${{ steps.analyze.outputs.category }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Severity:** ${{ steps.analyze.outputs.severity }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Auto-fixable:** ${{ steps.analyze.outputs.auto_fixable }}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            if [ "${{ steps.recovery.outputs.can_auto_recover }}" = "true" ]; then
+              echo "✅ Auto-recovery attempted" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "⚠️ Manual intervention required" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "⚠️ No failure logs could be analyzed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "*Workflow: ${{ github.event.workflow_run.name }}*" >> $GITHUB_STEP_SUMMARY
+          echo "*Run ID: ${{ github.event.workflow_run.id }}*" >> $GITHUB_STEP_SUMMARY
