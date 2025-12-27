@@ -256,8 +256,22 @@ class EnterpriseLogger:
             else:
                 logger.info("Error logged", **asdict(error_entry))
             
-            # TODO: Store errors in database table for tracking
-            # For now, increment counter
+            # Persist error to database for tracking and debugging
+            try:
+                self.atomic_ops.log_error(
+                    session_id=self.session_id,
+                    component=component,
+                    error_message=error_message,
+                    severity=severity,
+                    error_type=error_type,
+                    stack_trace=stack_trace,
+                    context=context
+                )
+            except Exception as db_error:
+                # Don't fail if database logging fails
+                logger.warning("Could not persist error to database",
+                              db_error=str(db_error))
+
             self.errors_logged += 1
             
         except Exception as e:
@@ -315,10 +329,42 @@ class EnterpriseLogger:
             self.errors_logged += 1
             raise
     
+    def get_error_statistics(self, hours: int = 24) -> Dict[str, Any]:
+        """Get detailed error statistics from database"""
+        try:
+            return self.atomic_ops.get_error_statistics(
+                session_id=self.session_id,
+                hours=hours
+            )
+        except Exception as e:
+            logger.warning("Could not retrieve error statistics", error=str(e))
+            return {'error': str(e)}
+
+    def get_unresolved_errors(self, limit: int = 50) -> list:
+        """Get unresolved errors for debugging"""
+        try:
+            return self.atomic_ops.get_unresolved_errors(
+                session_id=self.session_id,
+                limit=limit
+            )
+        except Exception as e:
+            logger.warning("Could not retrieve unresolved errors", error=str(e))
+            return []
+
     def get_statistics(self) -> Dict[str, Any]:
         """Get logging system statistics"""
         uptime = time.time() - self.start_time
-        
+
+        # Get error statistics from database
+        error_stats = {}
+        try:
+            error_stats = self.atomic_ops.get_error_statistics(
+                session_id=self.session_id,
+                hours=24
+            )
+        except Exception:
+            pass
+
         return {
             'logs_written': self.logs_written,
             'errors_logged': self.errors_logged,
@@ -326,7 +372,8 @@ class EnterpriseLogger:
             'logs_per_second': self.logs_written / uptime if uptime > 0 else 0,
             'error_rate_percent': (self.errors_logged / max(self.logs_written, 1)) * 100,
             'session_id': str(self.session_id) if self.session_id else None,
-            'database_health': self.db_manager.health_check() if self.db_manager else None
+            'database_health': self.db_manager.health_check() if self.db_manager else None,
+            'error_statistics': error_stats
         }
     
     def close(self):

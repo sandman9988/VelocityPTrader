@@ -1,0 +1,207 @@
+{
+  "uid": "run-control-meta",
+  "title": "Run Control & Meta",
+  "tags": ["trading", "control", "sessions"],
+  "timezone": "browser",
+  "editable": true,
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Active Session",
+      "gridPos": {"x": 0, "y": 0, "w": 6, "h": 4},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_session_active", "refId": "A"}],
+      "fieldConfig": {"defaults": {"mappings": [{"type": "value", "options": {"0": {"text": "INACTIVE", "color": "red"}, "1": {"text": "ACTIVE", "color": "green"}}}]}}
+    },
+    {
+      "type": "stat",
+      "title": "Current Phase",
+      "gridPos": {"x": 6, "y": 0, "w": 6, "h": 4},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_current_phase", "refId": "A"}],
+      "fieldConfig": {"defaults": {"mappings": [{"type": "value", "options": {"1": {"text": "PHASE A", "color": "blue"}, "2": {"text": "PHASE B", "color": "purple"}, "3": {"text": "PHASE C", "color": "orange"}}}]}}
+    },
+    {
+      "type": "stat",
+      "title": "Run Duration",
+      "gridPos": {"x": 12, "y": 0, "w": 6, "h": 4},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_run_duration_seconds", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "s"}}
+    },
+    {
+      "type": "stat",
+      "title": "Total Bars Processed",
+      "gridPos": {"x": 18, "y": 0, "w": 6, "h": 4},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_bars_processed_total", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "short"}}
+    },
+    {
+      "type": "table",
+      "title": "Run Catalogue",
+      "gridPos": {"x": 0, "y": 4, "w": 12, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "velocitytrader_run_info", "legendFormat": "{{run_id}}", "refId": "A", "format": "table", "instant": true}
+      ],
+      "fieldConfig": {"defaults": {"custom": {"align": "left"}}},
+      "options": {"showHeader": true, "sortBy": [{"displayName": "start_time", "desc": true}]}
+    },
+    {
+      "type": "barchart",
+      "title": "Phase Comparison: Total P&L",
+      "gridPos": {"x": 12, "y": 4, "w": 12, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "velocitytrader_phase_pnl{phase=\"A\"}", "legendFormat": "Phase A", "refId": "A"},
+        {"expr": "velocitytrader_phase_pnl{phase=\"B\"}", "legendFormat": "Phase B", "refId": "B"},
+        {"expr": "velocitytrader_phase_pnl{phase=\"C\"}", "legendFormat": "Phase C", "refId": "C"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "currencyUSD"}},
+      "options": {"orientation": "horizontal"}
+    },
+    {
+      "type": "timeseries",
+      "title": "Phase A: Equity Curve",
+      "gridPos": {"x": 0, "y": 12, "w": 8, "h": 6},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "velocitytrader_equity{phase=\"A\"}", "legendFormat": "Phase A Equity", "refId": "A"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "currencyUSD", "color": {"mode": "fixed", "fixedColor": "blue"}, "custom": {"lineWidth": 2, "fillOpacity": 10}}}
+    },
+    {
+      "type": "timeseries",
+      "title": "Phase B: Equity Curve",
+      "gridPos": {"x": 8, "y": 12, "w": 8, "h": 6},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "velocitytrader_equity{phase=\"B\"}", "legendFormat": "Phase B Equity", "refId": "A"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "currencyUSD", "color": {"mode": "fixed", "fixedColor": "purple"}, "custom": {"lineWidth": 2, "fillOpacity": 10}}}
+    },
+    {
+      "type": "timeseries",
+      "title": "Phase C: Equity Curve",
+      "gridPos": {"x": 16, "y": 12, "w": 8, "h": 6},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "velocitytrader_equity{phase=\"C\"}", "legendFormat": "Phase C Equity", "refId": "A"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "currencyUSD", "color": {"mode": "fixed", "fixedColor": "orange"}, "custom": {"lineWidth": 2, "fillOpacity": 10}}}
+    },
+    {
+      "type": "barchart",
+      "title": "Win Rate by Phase",
+      "gridPos": {"x": 0, "y": 18, "w": 8, "h": 5},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "velocitytrader_phase_win_rate{phase=\"A\"}", "legendFormat": "Phase A", "refId": "A"},
+        {"expr": "velocitytrader_phase_win_rate{phase=\"B\"}", "legendFormat": "Phase B", "refId": "B"},
+        {"expr": "velocitytrader_phase_win_rate{phase=\"C\"}", "legendFormat": "Phase C", "refId": "C"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100}},
+      "options": {"orientation": "vertical"}
+    },
+    {
+      "type": "barchart",
+      "title": "Total Trades by Phase",
+      "gridPos": {"x": 8, "y": 18, "w": 8, "h": 5},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "velocitytrader_phase_trades_total{phase=\"A\"}", "legendFormat": "Phase A", "refId": "A"},
+        {"expr": "velocitytrader_phase_trades_total{phase=\"B\"}", "legendFormat": "Phase B", "refId": "B"},
+        {"expr": "velocitytrader_phase_trades_total{phase=\"C\"}", "legendFormat": "Phase C", "refId": "C"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "short"}},
+      "options": {"orientation": "vertical"}
+    },
+    {
+      "type": "barchart",
+      "title": "Sharpe Ratio by Phase",
+      "gridPos": {"x": 16, "y": 18, "w": 8, "h": 5},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "velocitytrader_phase_sharpe{phase=\"A\"}", "legendFormat": "Phase A", "refId": "A"},
+        {"expr": "velocitytrader_phase_sharpe{phase=\"B\"}", "legendFormat": "Phase B", "refId": "B"},
+        {"expr": "velocitytrader_phase_sharpe{phase=\"C\"}", "legendFormat": "Phase C", "refId": "C"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "none", "decimals": 2}},
+      "options": {"orientation": "vertical"}
+    },
+    {
+      "type": "timeseries",
+      "title": "RL Learning Progress (Episodes)",
+      "gridPos": {"x": 0, "y": 23, "w": 12, "h": 6},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "velocitytrader_rl_episodes_total", "legendFormat": "Episodes", "refId": "E"},
+        {"expr": "velocitytrader_rl_model_updates_total", "legendFormat": "Model Updates", "refId": "U"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "short", "custom": {"lineWidth": 2}}}
+    },
+    {
+      "type": "timeseries",
+      "title": "Instance Switches Over Time",
+      "gridPos": {"x": 12, "y": 23, "w": 12, "h": 6},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "increase(velocitytrader_instance_switches_total{agent=\"BERSERKER\"}[5m])", "legendFormat": "BERSERKER Switches", "refId": "B"},
+        {"expr": "increase(velocitytrader_instance_switches_total{agent=\"SNIPER\"}[5m])", "legendFormat": "SNIPER Switches", "refId": "S"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "short", "custom": {"drawStyle": "bars"}}}
+    },
+    {
+      "type": "stat",
+      "title": "Symbols Active",
+      "gridPos": {"x": 0, "y": 29, "w": 4, "h": 3},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "count(velocitytrader_symbol_active == 1)", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "short"}}
+    },
+    {
+      "type": "stat",
+      "title": "Open Positions",
+      "gridPos": {"x": 4, "y": 29, "w": 4, "h": 3},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_position_count", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "short"}}
+    },
+    {
+      "type": "stat",
+      "title": "Avg Trade Duration",
+      "gridPos": {"x": 8, "y": 29, "w": 4, "h": 3},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_avg_trade_duration_bars", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "short", "custom": {"suffix": " bars"}}}
+    },
+    {
+      "type": "stat",
+      "title": "Primary Instance %",
+      "gridPos": {"x": 12, "y": 29, "w": 4, "h": 3},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_primary_instance_ratio * 100", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "percent", "thresholds": {"mode": "absolute", "steps": [{"color": "yellow", "value": null}, {"color": "green", "value": 60}]}}}
+    },
+    {
+      "type": "stat",
+      "title": "CPU Usage",
+      "gridPos": {"x": 16, "y": 29, "w": 4, "h": 3},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_cpu_percent", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "percent", "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 60}, {"color": "red", "value": 85}]}}}
+    },
+    {
+      "type": "stat",
+      "title": "Memory Usage",
+      "gridPos": {"x": 20, "y": 29, "w": 4, "h": 3},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_memory_mb", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "decmbytes", "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 512}, {"color": "red", "value": 1024}]}}}
+    }
+  ],
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "10s"
+}

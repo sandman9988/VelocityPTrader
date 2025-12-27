@@ -1,0 +1,141 @@
+# VelocityPTrader Alert Rules
+groups:
+  - name: trading_alerts
+    rules:
+      # High Drawdown Alert
+      - alert: HighDrawdown
+        expr: velocitytrader_max_drawdown > 15
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High drawdown detected"
+          description: "Max drawdown is {{ $value }}%, exceeding 15% threshold"
+
+      # Critical Drawdown Alert
+      - alert: CriticalDrawdown
+        expr: velocitytrader_max_drawdown > 25
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical drawdown level"
+          description: "Max drawdown is {{ $value }}%, exceeding 25% threshold. Consider stopping trading."
+
+      # Low Win Rate Alert
+      - alert: LowWinRate
+        expr: velocitytrader_win_rate < 40
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Win rate below threshold"
+          description: "Current win rate is {{ $value }}%, below 40% threshold"
+
+      # Negative Profit Factor
+      - alert: NegativeProfitFactor
+        expr: velocitytrader_profit_factor < 1
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Profit factor below 1"
+          description: "Profit factor is {{ $value }}, indicating losses exceed profits"
+
+  - name: system_alerts
+    rules:
+      # System Down
+      - alert: SystemDown
+        expr: velocitytrader_system_status == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "VelocityPTrader system is down"
+          description: "Trading system has stopped running"
+
+      # MT5 Connection Lost
+      - alert: MT5Disconnected
+        expr: velocitytrader_mt5_connection == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "MT5 connection lost"
+          description: "Connection to MT5 terminal has been lost"
+
+      # High Error Rate
+      - alert: HighErrorRate
+        expr: rate(velocitytrader_errors_total[5m]) * 300 > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value }} errors per 5 minutes"
+
+      # Critical Errors
+      - alert: CriticalErrors
+        expr: increase(velocitytrader_errors_critical_total[1h]) > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical errors detected"
+          description: "{{ $value }} critical errors in the last hour"
+
+      # Database Latency
+      - alert: HighDBLatency
+        expr: velocitytrader_db_query_latency_ms > 500
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High database latency"
+          description: "Database query latency is {{ $value }}ms"
+
+  - name: agent_alerts
+    rules:
+      # BERSERKER Underperforming
+      - alert: BerserkerUnderperforming
+        expr: velocitytrader_agent_win_rate{agent="berserker"} < 35
+        for: 1h
+        labels:
+          severity: warning
+          agent: berserker
+        annotations:
+          summary: "BERSERKER agent underperforming"
+          description: "BERSERKER win rate is {{ $value }}%"
+
+      # SNIPER Underperforming
+      - alert: SniperUnderperforming
+        expr: velocitytrader_agent_win_rate{agent="sniper"} < 45
+        for: 1h
+        labels:
+          severity: warning
+          agent: sniper
+        annotations:
+          summary: "SNIPER agent underperforming"
+          description: "SNIPER win rate is {{ $value }}%"
+
+  - name: rl_alerts
+    rules:
+      # Low Model Confidence
+      - alert: LowModelConfidence
+        expr: velocitytrader_rl_model_confidence < 0.3
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "RL model confidence is low"
+          description: "Model confidence is {{ $value }}, consider retraining"
+
+      # High Exploration Rate (not learning)
+      - alert: HighExplorationRate
+        expr: velocitytrader_rl_exploration_rate > 0.5 and velocitytrader_rl_total_experiences > 10000
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "RL exploration rate still high"
+          description: "Exploration rate is {{ $value }} despite {{ $labels.velocitytrader_rl_total_experiences }} experiences"

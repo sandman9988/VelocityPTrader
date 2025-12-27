@@ -5,7 +5,7 @@ Enterprise-grade atomic operations for VelocityTrader with data integrity
 """
 
 import asyncio
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from decimal import Decimal
 from typing import Optional, Dict, Any, List, Union, Tuple
 from uuid import UUID, uuid4
@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 import structlog
 
 from .models import (
-    TradingSession, MarketData, Trade, AgentPerformance, SystemHealth,
+    TradingSession, MarketData, Trade, AgentPerformance, SystemHealth, ErrorLog,
     TradingMode, AgentType, ActionType, MarketRegime
 )
 from .connection import DatabaseManager, get_database_manager, AtomicOperationError
@@ -519,7 +519,165 @@ class AtomicDataOperations:
         except Exception as e:
             logger.error("Failed to log system health", error=str(e))
             raise AtomicOperationError(f"Health logging failed: {e}") from e
-    
+
+    # ERROR LOGGING
+
+    def log_error(
+        self,
+        session_id: Optional[UUID],
+        component: str,
+        error_message: str,
+        severity: str,
+        error_type: str = "UNKNOWN",
+        stack_trace: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None
+    ) -> ErrorLog:
+        """Log error to database atomically for tracking and debugging"""
+        try:
+            with self.db.atomic_transaction() as session:
+                # Validate severity
+                valid_severities = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
+                if severity not in valid_severities:
+                    severity = 'ERROR'
+
+                # Truncate error message if too long
+                if len(error_message) > 10000:
+                    error_message = error_message[:10000] + "... [truncated]"
+
+                error_log = ErrorLog(
+                    session_id=session_id,
+                    component=component[:100] if component else "UNKNOWN",
+                    error_type=error_type[:100] if error_type else "UNKNOWN",
+                    error_message=error_message,
+                    severity=severity,
+                    stack_trace=stack_trace,
+                    context=context or {},
+                    resolved=False
+                )
+
+                session.add(error_log)
+                session.flush()
+
+                logger.debug("Error logged to database atomically",
+                            error_id=str(error_log.id),
+                            component=component,
+                            severity=severity)
+
+                self._operation_count += 1
+                return error_log
+
+        except Exception as e:
+            # Don't raise - logging errors shouldn't crash the system
+            logger.warning("Failed to persist error to database",
+                          original_error=error_message,
+                          db_error=str(e))
+            return None
+
+    def get_unresolved_errors(
+        self,
+        session_id: Optional[UUID] = None,
+        severity: Optional[str] = None,
+        component: Optional[str] = None,
+        limit: int = 100
+    ) -> List[ErrorLog]:
+        """Get unresolved errors for debugging"""
+        try:
+            with self.db.get_session() as session:
+                query = session.query(ErrorLog).filter(ErrorLog.resolved == False)
+
+                if session_id:
+                    query = query.filter(ErrorLog.session_id == session_id)
+                if severity:
+                    query = query.filter(ErrorLog.severity == severity)
+                if component:
+                    query = query.filter(ErrorLog.component == component)
+
+                errors = query.order_by(desc(ErrorLog.timestamp)).limit(limit).all()
+
+                logger.debug("Unresolved errors retrieved", count=len(errors))
+                return errors
+
+        except Exception as e:
+            logger.error("Failed to retrieve errors", error=str(e))
+            return []
+
+    def resolve_error(
+        self,
+        error_id: UUID,
+        resolution_notes: Optional[str] = None
+    ) -> Optional[ErrorLog]:
+        """Mark an error as resolved"""
+        try:
+            with self.db.atomic_transaction() as session:
+                error_log = session.query(ErrorLog).filter(
+                    ErrorLog.id == error_id
+                ).first()
+
+                if not error_log:
+                    logger.warning("Error not found for resolution", error_id=str(error_id))
+                    return None
+
+                error_log.resolved = True
+                error_log.resolved_at = datetime.now(timezone.utc)
+                error_log.resolution_notes = resolution_notes
+
+                session.flush()
+
+                logger.info("Error resolved",
+                           error_id=str(error_id),
+                           component=error_log.component)
+
+                self._operation_count += 1
+                return error_log
+
+        except Exception as e:
+            logger.error("Failed to resolve error", error=str(e))
+            return None
+
+    def get_error_statistics(
+        self,
+        session_id: Optional[UUID] = None,
+        hours: int = 24
+    ) -> Dict[str, Any]:
+        """Get error statistics for monitoring"""
+        try:
+            with self.db.get_session() as session:
+                cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
+
+                query = session.query(ErrorLog).filter(ErrorLog.timestamp >= cutoff)
+                if session_id:
+                    query = query.filter(ErrorLog.session_id == session_id)
+
+                total = query.count()
+                critical = query.filter(ErrorLog.severity == 'CRITICAL').count()
+                errors = query.filter(ErrorLog.severity == 'ERROR').count()
+                warnings = query.filter(ErrorLog.severity == 'WARNING').count()
+                resolved = query.filter(ErrorLog.resolved == True).count()
+
+                # Get top error components
+                component_counts = session.query(
+                    ErrorLog.component,
+                    func.count(ErrorLog.id).label('count')
+                ).filter(
+                    ErrorLog.timestamp >= cutoff
+                ).group_by(ErrorLog.component).order_by(desc('count')).limit(5).all()
+
+                return {
+                    'period_hours': hours,
+                    'total_errors': total,
+                    'critical_count': critical,
+                    'error_count': errors,
+                    'warning_count': warnings,
+                    'resolved_count': resolved,
+                    'unresolved_count': total - resolved,
+                    'resolution_rate': resolved / total if total > 0 else 1.0,
+                    'top_components': [{'component': c, 'count': cnt} for c, cnt in component_counts]
+                }
+
+        except Exception as e:
+            logger.error("Failed to get error statistics", error=str(e))
+            return {'error': str(e)}
+
     # QUERY OPERATIONS
     
     def get_active_trades(self, session_id: UUID, agent_type: Optional[AgentType] = None) -> List[Trade]:

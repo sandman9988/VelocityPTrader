@@ -1,0 +1,136 @@
+{
+  "uid": "instrument-physics-view",
+  "title": "Instrument & Physics View",
+  "tags": ["trading", "physics", "instruments"],
+  "timezone": "browser",
+  "editable": true,
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Price Action (OHLC)",
+      "gridPos": {"x": 0, "y": 0, "w": 16, "h": 8},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "velocitytrader_price_open", "legendFormat": "Open", "refId": "O"},
+        {"expr": "velocitytrader_price_high", "legendFormat": "High", "refId": "H"},
+        {"expr": "velocitytrader_price_low", "legendFormat": "Low", "refId": "L"},
+        {"expr": "velocitytrader_price_close", "legendFormat": "Close", "refId": "C"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "currencyUSD", "custom": {"drawStyle": "line", "lineWidth": 2}}}
+    },
+    {
+      "type": "stat",
+      "title": "Current Regime",
+      "gridPos": {"x": 16, "y": 0, "w": 8, "h": 4},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_regime_current", "refId": "A"}],
+      "fieldConfig": {"defaults": {"mappings": [{"type": "value", "options": {"1": {"text": "CHAOTIC", "color": "red"}, "2": {"text": "UNDERDAMPED", "color": "orange"}, "3": {"text": "CRITICALLY_DAMPED", "color": "yellow"}, "4": {"text": "OVERDAMPED", "color": "green"}}}]}}
+    },
+    {
+      "type": "gauge",
+      "title": "Market Energy",
+      "gridPos": {"x": 16, "y": 4, "w": 4, "h": 4},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_physics_energy", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "none", "min": 0, "max": 100, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 40}, {"color": "orange", "value": 60}, {"color": "red", "value": 80}]}}}
+    },
+    {
+      "type": "gauge",
+      "title": "Damping Ratio",
+      "gridPos": {"x": 20, "y": 4, "w": 4, "h": 4},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_physics_damping", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "none", "min": 0, "max": 2, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "orange", "value": 0.5}, {"color": "yellow", "value": 0.9}, {"color": "green", "value": 1.0}]}}}
+    },
+    {
+      "type": "timeseries",
+      "title": "Physics: Momentum & Velocity",
+      "gridPos": {"x": 0, "y": 8, "w": 12, "h": 6},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "velocitytrader_physics_momentum", "legendFormat": "Momentum", "refId": "M"},
+        {"expr": "velocitytrader_physics_velocity", "legendFormat": "Velocity", "refId": "V"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "none", "custom": {"fillOpacity": 10}}}
+    },
+    {
+      "type": "timeseries",
+      "title": "Physics: Acceleration & Friction",
+      "gridPos": {"x": 12, "y": 8, "w": 12, "h": 6},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "velocitytrader_physics_acceleration", "legendFormat": "Acceleration", "refId": "A"},
+        {"expr": "velocitytrader_physics_friction", "legendFormat": "Friction", "refId": "F"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "none", "custom": {"fillOpacity": 10}}}
+    },
+    {
+      "type": "state-timeline",
+      "title": "Market Regime Timeline",
+      "gridPos": {"x": 0, "y": 14, "w": 24, "h": 4},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_regime_current", "legendFormat": "Regime", "refId": "A"}],
+      "fieldConfig": {"defaults": {"mappings": [{"type": "value", "options": {"1": {"text": "CHAOTIC", "color": "red"}, "2": {"text": "UNDERDAMPED", "color": "orange"}, "3": {"text": "CRITICALLY_DAMPED", "color": "yellow"}, "4": {"text": "OVERDAMPED", "color": "green"}}}], "custom": {"fillOpacity": 70}}}
+    },
+    {
+      "type": "timeseries",
+      "title": "Energy & Natural Frequency Over Time",
+      "gridPos": {"x": 0, "y": 18, "w": 12, "h": 6},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "velocitytrader_physics_energy", "legendFormat": "Energy", "refId": "E"},
+        {"expr": "velocitytrader_physics_frequency", "legendFormat": "Natural Frequency", "refId": "F"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "none"}}
+    },
+    {
+      "type": "barchart",
+      "title": "Performance by Regime",
+      "gridPos": {"x": 12, "y": 18, "w": 12, "h": 6},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "velocitytrader_regime_performance{regime=\"CHAOTIC\"}", "legendFormat": "Chaotic", "refId": "C"},
+        {"expr": "velocitytrader_regime_performance{regime=\"UNDERDAMPED\"}", "legendFormat": "Underdamped", "refId": "U"},
+        {"expr": "velocitytrader_regime_performance{regime=\"CRITICALLY_DAMPED\"}", "legendFormat": "Critical", "refId": "R"},
+        {"expr": "velocitytrader_regime_performance{regime=\"OVERDAMPED\"}", "legendFormat": "Overdamped", "refId": "O"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "currencyUSD"}},
+      "options": {"orientation": "horizontal"}
+    },
+    {
+      "type": "stat",
+      "title": "Spread (pips)",
+      "gridPos": {"x": 0, "y": 24, "w": 6, "h": 3},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_spread_current * 10000", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "none", "decimals": 1, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 2}, {"color": "red", "value": 5}]}}}
+    },
+    {
+      "type": "stat",
+      "title": "Volatility",
+      "gridPos": {"x": 6, "y": 24, "w": 6, "h": 3},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_volatility_current", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "percent", "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 15}, {"color": "orange", "value": 25}, {"color": "red", "value": 40}]}}}
+    },
+    {
+      "type": "stat",
+      "title": "ATR (14)",
+      "gridPos": {"x": 12, "y": 24, "w": 6, "h": 3},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_atr_14", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "currencyUSD", "decimals": 5}}
+    },
+    {
+      "type": "stat",
+      "title": "Volume",
+      "gridPos": {"x": 18, "y": 24, "w": 6, "h": 3},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "velocitytrader_volume_current", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "short"}}
+    }
+  ],
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "5s"
+}
