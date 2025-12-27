@@ -5,7 +5,7 @@ Uses AI to diagnose failures and generate automated fixes.
 """
 
 import re
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 from dataclasses import dataclass
 from pathlib import Path
 
