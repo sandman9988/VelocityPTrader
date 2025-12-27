@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 """
 ENTERPRISE DATABASE CONNECTION MANAGER
-PostgreSQL connection pooling with atomic operations and safety
+PostgreSQL connection pooling with atomic operations, circuit breakers, and resilience
 """
 
 import asyncio
 import os
+import threading
 from contextlib import contextmanager, asynccontextmanager
 from typing import Optional, Dict, Any, List, AsyncGenerator
 from urllib.parse import quote_plus
+from datetime import datetime, timezone
 import time
 
 from sqlalchemy import create_engine, text, event
@@ -21,6 +23,12 @@ from asyncpg import Connection, Pool
 import structlog
 
 from .models import Base, TradingSession, MarketData, Trade, AgentPerformance, SystemHealth
+from ..utils.resilience import (
+    ConnectionManagerBase, ConnectionState, CircuitBreaker, CircuitBreakerConfig,
+    RetryConfig, with_retry, with_fallback, with_circuit_breaker,
+    GracefulDegradation, WriteBuffer, register_connection_manager,
+    calculate_backoff_delay, CircuitBreakerError, log_resilience_event
+)
 
 logger = structlog.get_logger(__name__)
 
@@ -76,8 +84,8 @@ class DatabaseConfig:
         )
 
 class DatabaseManager:
-    """Enterprise database manager with connection pooling and atomic operations"""
-    
+    """Enterprise database manager with connection pooling, circuit breakers, and resilience"""
+
     def __init__(self, config: Optional[DatabaseConfig] = None):
         self.config = config or DatabaseConfig()
         self.engine: Optional[Engine] = None
@@ -85,10 +93,58 @@ class DatabaseManager:
         self.async_pool: Optional[Pool] = None
         self._health_check_interval = 60  # seconds
         self._last_health_check = 0
-        
-        logger.info("Database manager initialized", 
-                   host=self.config.host, 
-                   database=self.config.database)
+
+        # Resilience components
+        self._state = ConnectionState.DISCONNECTED
+        self._state_lock = threading.RLock()
+
+        # Circuit breaker for database operations
+        self.circuit_breaker = CircuitBreaker(
+            name="database",
+            config=CircuitBreakerConfig(
+                failure_threshold=5,
+                success_threshold=3,
+                timeout_seconds=30.0
+            )
+        )
+
+        # Retry configuration
+        self.retry_config = RetryConfig(
+            max_retries=self.config.max_retries,
+            initial_delay_ms=int(self.config.retry_delay * 1000),
+            max_delay_ms=30000,
+            exponential_base=2.0,
+            jitter=True,
+            retryable_exceptions=(OperationalError, SQLAlchemyError)
+        )
+
+        # Graceful degradation handler
+        self.degradation = GracefulDegradation(
+            name="database",
+            cache_ttl_seconds=60.0
+        )
+
+        # Write buffer for when database is slow/unavailable
+        self.write_buffer = WriteBuffer(
+            name="database_writes",
+            max_buffer_size=1000,
+            flush_interval_seconds=5.0
+        )
+
+        # Health tracking
+        self._consecutive_failures = 0
+        self._consecutive_successes = 0
+        self._total_operations = 0
+        self._total_failures = 0
+        self._last_successful_operation: Optional[datetime] = None
+        self._last_failed_operation: Optional[datetime] = None
+        self._last_error: Optional[str] = None
+
+        logger.info("Database manager initialized with resilience",
+                   host=self.config.host,
+                   database=self.config.database,
+                   circuit_breaker="enabled",
+                   retry_max=self.config.max_retries)
     
     def initialize_sync_engine(self) -> Engine:
         """Initialize synchronous database engine with connection pooling"""
@@ -217,41 +273,98 @@ class DatabaseManager:
             logger.error("Database connection verification failed", error=str(e))
             raise DatabaseConnectionError(f"Connection verification failed: {e}") from e
     
+    def _record_success(self):
+        """Record successful operation for health tracking"""
+        with self._state_lock:
+            self._consecutive_successes += 1
+            self._consecutive_failures = 0
+            self._total_operations += 1
+            self._last_successful_operation = datetime.now(timezone.utc)
+
+            if self._state == ConnectionState.DEGRADED:
+                if self._consecutive_successes >= 3:
+                    self._state = ConnectionState.CONNECTED
+                    self.degradation.exit_degraded_mode()
+                    log_resilience_event("recovery", "database",
+                                        message="Database connection recovered")
+
+        self.circuit_breaker.record_success()
+
+    def _record_failure(self, error: str):
+        """Record failed operation for health tracking"""
+        with self._state_lock:
+            self._consecutive_failures += 1
+            self._consecutive_successes = 0
+            self._total_operations += 1
+            self._total_failures += 1
+            self._last_failed_operation = datetime.now(timezone.utc)
+            self._last_error = error
+
+            if self._state == ConnectionState.CONNECTED:
+                if self._consecutive_failures >= 3:
+                    self._state = ConnectionState.DEGRADED
+                    self.degradation.enter_degraded_mode(error)
+                    log_resilience_event("degradation", "database",
+                                        message="Database entering degraded mode",
+                                        error=error)
+
+        self.circuit_breaker.record_failure(error)
+
     @contextmanager
     def get_session(self) -> Session:
-        """Get database session with automatic cleanup"""
+        """Get database session with circuit breaker and automatic cleanup"""
+        # Check circuit breaker
+        if not self.circuit_breaker.allow_request():
+            raise CircuitBreakerError("Database circuit breaker is open")
+
         if self.engine is None:
             self.initialize_sync_engine()
-        
+
         session = self.session_factory()
+        start_time = time.time()
         try:
             yield session
             session.commit()
+            self._record_success()
         except Exception as e:
             session.rollback()
+            self._record_failure(str(e))
             logger.error("Database session error", error=str(e))
             raise
         finally:
             session.close()
-    
+            latency_ms = (time.time() - start_time) * 1000
+            if latency_ms > 1000:
+                logger.warning("Slow database operation", latency_ms=latency_ms)
+
     @contextmanager
     def atomic_transaction(self) -> Session:
-        """Atomic transaction with automatic rollback on error"""
+        """Atomic transaction with circuit breaker and automatic rollback"""
+        # Check circuit breaker
+        if not self.circuit_breaker.allow_request():
+            raise CircuitBreakerError("Database circuit breaker is open")
+
         if self.engine is None:
             self.initialize_sync_engine()
-        
+
         session = self.session_factory()
+        start_time = time.time()
         try:
             session.begin()
             yield session
             session.commit()
+            self._record_success()
             logger.debug("Atomic transaction committed successfully")
         except Exception as e:
             session.rollback()
+            self._record_failure(str(e))
             logger.error("Atomic transaction rolled back", error=str(e))
             raise
         finally:
             session.close()
+            latency_ms = (time.time() - start_time) * 1000
+            if latency_ms > 1000:
+                logger.warning("Slow atomic transaction", latency_ms=latency_ms)
     
     @asynccontextmanager
     async def async_connection(self) -> AsyncGenerator[Connection, None]:
@@ -278,19 +391,49 @@ class DatabaseManager:
                     logger.error("Async atomic transaction rolled back", error=str(e))
                     raise
     
+    def get_resilience_status(self) -> Dict[str, Any]:
+        """Get resilience and health tracking status"""
+        with self._state_lock:
+            error_rate = (
+                self._total_failures / self._total_operations * 100
+                if self._total_operations > 0 else 0
+            )
+
+            return {
+                "connection_state": self._state.value,
+                "circuit_breaker_state": self.circuit_breaker.state.value,
+                "is_degraded": self.degradation.is_degraded,
+                "consecutive_failures": self._consecutive_failures,
+                "consecutive_successes": self._consecutive_successes,
+                "total_operations": self._total_operations,
+                "total_failures": self._total_failures,
+                "error_rate_percent": round(error_rate, 2),
+                "last_successful_operation": (
+                    self._last_successful_operation.isoformat()
+                    if self._last_successful_operation else None
+                ),
+                "last_failed_operation": (
+                    self._last_failed_operation.isoformat()
+                    if self._last_failed_operation else None
+                ),
+                "last_error": self._last_error,
+                "write_buffer_size": self.write_buffer.size
+            }
+
     def health_check(self) -> Dict[str, Any]:
-        """Comprehensive database health check"""
+        """Comprehensive database health check with resilience status"""
         current_time = time.time()
-        
+
         # Rate limit health checks
         if current_time - self._last_health_check < self._health_check_interval:
             return {"status": "cached", "last_check": self._last_health_check}
-        
+
         health_status = {
             "status": "unknown",
             "connection_pool": {},
             "database": {},
             "performance": {},
+            "resilience": self.get_resilience_status(),
             "timestamp": current_time
         }
         

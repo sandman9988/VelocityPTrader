@@ -532,6 +532,59 @@ class EnterpriseDashboard:
                 logger.error(f"Failed to initialize settings: {e}")
                 return {"status": "error", "message": str(e)}
 
+        @self.app.get("/api/resilience")
+        async def get_resilience_status():
+            """Get comprehensive resilience status for all system components"""
+            try:
+                result = {
+                    "status": "success",
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "components": {}
+                }
+
+                # Get all registered connection manager health
+                try:
+                    from src.utils.resilience import get_all_connection_health
+                    connection_health = get_all_connection_health()
+                    result["components"]["connections"] = connection_health
+                except Exception as e:
+                    result["components"]["connections"] = {"error": str(e)}
+
+                # Get database resilience status
+                try:
+                    from src.database.connection import get_database_manager
+                    db = get_database_manager()
+                    result["components"]["database"] = db.get_resilience_status()
+                except Exception as e:
+                    result["components"]["database"] = {"error": str(e)}
+
+                # Get MT5 connection status
+                try:
+                    from src.data.mt5_resilient_connection import get_mt5_connection
+                    mt5 = get_mt5_connection()
+                    result["components"]["mt5"] = mt5.get_connection_status()
+                except Exception as e:
+                    result["components"]["mt5"] = {"error": str(e)}
+
+                # Get WebSocket connection summary
+                result["components"]["websocket"] = {
+                    "active_connections": len(self.connection_manager.active_connections),
+                    "connection_metadata": {
+                        sid: {
+                            "user_id": meta.get("user_id"),
+                            "connected_at": meta.get("connected_at").isoformat() if meta.get("connected_at") else None,
+                            "message_count": meta.get("message_count", 0)
+                        }
+                        for sid, meta in self.connection_manager.connection_metadata.items()
+                    }
+                }
+
+                return result
+
+            except Exception as e:
+                logger.error(f"Failed to get resilience status: {e}")
+                return {"status": "error", "message": str(e)}
+
         @self.app.get("/api/symbols")
         async def get_real_symbols():
             """Get REAL Vantage MT5 symbols with ATOMIC persistence"""
@@ -1182,35 +1235,65 @@ class EnterpriseDashboard:
             constructor() {
                 this.ws = null;
                 this.reconnectAttempts = 0;
-                this.maxReconnectAttempts = 10;
-                this.reconnectInterval = 5000;
+                this.maxReconnectAttempts = 15;
                 this.messageCount = 0;
                 this.lastMessageTime = Date.now();
                 this.token = localStorage.getItem('auth_token');
-                
+
+                // Exponential backoff configuration
+                this.baseReconnectDelay = 1000;  // 1 second
+                this.maxReconnectDelay = 60000;  // 60 seconds max
+                this.backoffMultiplier = 2.0;
+                this.jitterFactor = 0.1;
+
+                // Health tracking
+                this.connectionHealth = {
+                    state: 'DISCONNECTED',
+                    consecutiveFailures: 0,
+                    consecutiveSuccesses: 0,
+                    lastSuccessTime: null,
+                    lastFailureTime: null,
+                    totalReconnects: 0
+                };
+
                 this.connect();
                 this.startMetricsUpdate();
+                this.startHealthMonitoring();
             }
-            
+
+            calculateBackoffDelay() {
+                // Exponential backoff with jitter
+                let delay = this.baseReconnectDelay * Math.pow(this.backoffMultiplier, this.reconnectAttempts);
+                delay = Math.min(delay, this.maxReconnectDelay);
+
+                // Add jitter to prevent thundering herd
+                const jitter = delay * this.jitterFactor;
+                delay += (Math.random() - 0.5) * 2 * jitter;
+
+                return Math.max(delay, this.baseReconnectDelay);
+            }
+
             connect() {
                 if (!this.token) {
                     this.authenticate();
                     return;
                 }
-                
+
+                this.connectionHealth.state = 'CONNECTING';
+
                 const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
                 const wsUrl = `${protocol}//${location.host}/ws?token=${this.token}`;
-                
+
                 try {
                     this.ws = new WebSocket(wsUrl);
                     this.ws.onopen = this.onConnect.bind(this);
                     this.ws.onmessage = this.onMessage.bind(this);
                     this.ws.onclose = this.onClose.bind(this);
                     this.ws.onerror = this.onError.bind(this);
-                    
+
                 } catch (error) {
                     console.error('WebSocket connection failed:', error);
-                    this.scheduleReconnect();
+                    this.handleConnectionFailure('Connection initialization failed');
                 }
             }
             
@@ -1241,23 +1324,28 @@ class EnterpriseDashboard:
             onConnect() {
                 console.log('Enterprise WebSocket connected');
                 this.reconnectAttempts = 0;
+                this.connectionHealth.state = 'CONNECTED';
+                this.connectionHealth.consecutiveSuccesses++;
+                this.connectionHealth.consecutiveFailures = 0;
+                this.connectionHealth.lastSuccessTime = Date.now();
                 this.updateConnectionStatus('Connected', true);
-                
+
                 // Subscribe to market data
                 this.send({
                     type: 'subscribe_market_data',
                     symbols: ['EURUSD', 'EURUSD+', 'BTCUSD', 'XAUUSD']
                 });
-                
+
                 // Request system status
                 this.send({ type: 'request_system_status' });
             }
-            
+
             onMessage(event) {
                 const data = JSON.parse(event.data);
                 this.messageCount++;
                 this.lastMessageTime = Date.now();
-                
+                this.connectionHealth.consecutiveSuccesses++;
+
                 switch (data.type) {
                     case 'connection_established':
                         this.updateSystemStatus(data);
@@ -1269,32 +1357,95 @@ class EnterpriseDashboard:
                         this.updateSystemStatus(data);
                         break;
                     case 'pong':
-                        // Update latency
+                        // Update latency measurement
+                        if (data.timestamp) {
+                            const latency = Date.now() - new Date(data.timestamp).getTime();
+                            document.getElementById('latency').textContent = `${latency} ms`;
+                        }
+                        break;
+                    case 'resilience_status':
+                        this.updateResilienceStatus(data);
                         break;
                 }
             }
-            
+
             onClose(event) {
                 console.log('WebSocket closed:', event.code, event.reason);
-                this.updateConnectionStatus('Disconnected', false);
-                this.scheduleReconnect();
+                this.handleConnectionFailure(`Connection closed: ${event.reason || 'Unknown'}`);
             }
-            
+
             onError(error) {
                 console.error('WebSocket error:', error);
-                this.updateConnectionStatus('Connection Error', false);
+                this.handleConnectionFailure('Connection error');
             }
-            
-            scheduleReconnect() {
-                if (this.reconnectAttempts < this.maxReconnectAttempts) {
-                    this.reconnectAttempts++;
-                    setTimeout(() => {
-                        console.log(`Reconnecting... Attempt ${this.reconnectAttempts}`);
-                        this.updateConnectionStatus(`Reconnecting (${this.reconnectAttempts}/${this.maxReconnectAttempts})`, false);
-                        this.connect();
-                    }, this.reconnectInterval);
+
+            handleConnectionFailure(reason) {
+                this.connectionHealth.state = 'DISCONNECTED';
+                this.connectionHealth.consecutiveFailures++;
+                this.connectionHealth.consecutiveSuccesses = 0;
+                this.connectionHealth.lastFailureTime = Date.now();
+
+                // Check if we should enter degraded mode
+                if (this.connectionHealth.consecutiveFailures >= 3) {
+                    this.connectionHealth.state = 'DEGRADED';
+                    this.updateConnectionStatus('Degraded Mode', false);
+                    console.warn('Entering degraded mode after multiple failures');
                 } else {
-                    this.updateConnectionStatus('Connection Failed', false);
+                    this.updateConnectionStatus('Disconnected', false);
+                }
+
+                this.scheduleReconnect();
+            }
+
+            scheduleReconnect() {
+                if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+                    this.connectionHealth.state = 'FAILED';
+                    this.updateConnectionStatus('Connection Failed - Refresh Page', false);
+                    console.error('Max reconnection attempts reached');
+                    return;
+                }
+
+                const delay = this.calculateBackoffDelay();
+                this.reconnectAttempts++;
+                this.connectionHealth.totalReconnects++;
+                this.connectionHealth.state = 'RECONNECTING';
+
+                console.log(`Reconnecting in ${Math.round(delay/1000)}s... Attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts}`);
+                this.updateConnectionStatus(
+                    `Reconnecting in ${Math.round(delay/1000)}s (${this.reconnectAttempts}/${this.maxReconnectAttempts})`,
+                    false
+                );
+
+                setTimeout(() => {
+                    this.connect();
+                }, delay);
+            }
+
+            startHealthMonitoring() {
+                // Check connection health every 30 seconds
+                setInterval(() => {
+                    if (this.connectionHealth.state === 'CONNECTED') {
+                        const timeSinceLastMessage = Date.now() - this.lastMessageTime;
+
+                        // If no messages for 60 seconds, connection might be stale
+                        if (timeSinceLastMessage > 60000) {
+                            console.warn('No messages received for 60s, checking connection');
+                            this.send({ type: 'ping', timestamp: Date.now() });
+                        }
+                    }
+
+                    // Log health status periodically
+                    console.debug('Connection health:', this.connectionHealth);
+                }, 30000);
+            }
+
+            updateResilienceStatus(data) {
+                // Update UI with backend resilience information
+                if (data.database) {
+                    console.log('Database resilience:', data.database);
+                }
+                if (data.mt5) {
+                    console.log('MT5 resilience:', data.mt5);
                 }
             }
             
