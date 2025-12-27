@@ -15,6 +15,7 @@ import aiohttp
 import logging
 import hashlib
 import secrets
+import os
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Set, Any, Callable
 from dataclasses import dataclass, asdict
@@ -2360,6 +2361,28 @@ class EnterpriseDashboard:
         while True:
             await asyncio.sleep(self.connection_config.heartbeat_interval)
             await self.connection_manager.ping_all_connections()
+
+
+def create_app() -> FastAPI:
+    """Factory function to create the dashboard app for uvicorn"""
+    connection_config = ConnectionConfig(
+        primary_host="0.0.0.0",
+        primary_port=8443
+    )
+    security_config = SecurityConfig(
+        jwt_secret_key=os.getenv("JWT_SECRET", "dev-secret-key"),
+        jwt_expiration_minutes=60
+    )
+    dashboard = EnterpriseDashboard(
+        connection_config=connection_config,
+        security_config=security_config
+    )
+    return dashboard.app
+
+
+# Module-level app instance for uvicorn
+app = create_app()
+
 
 def main():
     """Start the enterprise dashboard"""
