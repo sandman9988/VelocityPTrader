@@ -142,12 +142,15 @@ class MT5ResilientConnection(ConnectionManagerBase):
                 finally:
                     # Clean up socket and context only if connection failed
                     if not zmq_success:
-                        if self._zmq_socket:
-                            self._zmq_socket.close()
-                            self._zmq_socket = None
-                        if self._zmq_context:
-                            self._zmq_context.term()
-                            self._zmq_context = None
+                        try:
+                            if self._zmq_socket:
+                                self._zmq_socket.close()
+                                self._zmq_socket = None
+                            if self._zmq_context:
+                                self._zmq_context.term()
+                                self._zmq_context = None
+                        except Exception as cleanup_error:
+                            logger.warning("Error during ZMQ cleanup", error=str(cleanup_error))
 
             # Fallback to file-based monitoring
             if self.data_file.exists():
