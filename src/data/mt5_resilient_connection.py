@@ -74,6 +74,7 @@ class MT5ResilientConnection(ConnectionManagerBase):
         )
 
         # MT5 specific state
+        self._zmq_context = None
         self._zmq_socket = None
         self._is_initialized = False
         self._last_tick_time: Optional[datetime] = None
@@ -117,8 +118,8 @@ class MT5ResilientConnection(ConnectionManagerBase):
             if self.config.zmq_port > 0:
                 try:
                     import zmq.asyncio
-                    context = zmq.asyncio.Context()
-                    self._zmq_socket = context.socket(zmq.REQ)
+                    self._zmq_context = zmq.asyncio.Context()
+                    self._zmq_socket = self._zmq_context.socket(zmq.REQ)
                     self._zmq_socket.connect(f"tcp://localhost:{self.config.zmq_port}")
                     self._zmq_socket.setsockopt(zmq.RCVTIMEO, self.config.timeout_ms)
                     self._zmq_socket.setsockopt(zmq.SNDTIMEO, self.config.timeout_ms)
@@ -136,6 +137,10 @@ class MT5ResilientConnection(ConnectionManagerBase):
                     logger.debug("ZMQ not available, using file-based connection")
                 except Exception as e:
                     logger.warning("ZMQ connection failed", error=str(e))
+                    # Clean up context on failure
+                    if self._zmq_context:
+                        self._zmq_context.term()
+                        self._zmq_context = None
 
             # Fallback to file-based monitoring
             if self.data_file.exists():
@@ -165,6 +170,10 @@ class MT5ResilientConnection(ConnectionManagerBase):
             if self._zmq_socket:
                 self._zmq_socket.close()
                 self._zmq_socket = None
+
+            if self._zmq_context:
+                self._zmq_context.term()
+                self._zmq_context = None
 
             self._is_initialized = False
             logger.info("MT5 connection closed")
