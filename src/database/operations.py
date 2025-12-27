@@ -1047,7 +1047,13 @@ class AtomicDataOperations:
                 import json
                 parsed_value = json.loads(value)
             except (ValueError, TypeError):
-                pass
+                # If JSON parsing fails, fall back to the original string and log for observability.
+                logger.warning(
+                    "Failed to parse JSON setting value; using raw string",
+                    setting_id=str(setting.id),
+                    category=setting.category,
+                    key=setting.key,
+                )
 
         return {
             'id': str(setting.id),
