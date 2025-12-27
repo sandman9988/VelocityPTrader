@@ -6,7 +6,7 @@ Analyzes GitHub Actions workflow failures and categorizes them for auto-recovery
 
 import re
 import json
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 from enum import Enum
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
