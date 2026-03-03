@@ -319,7 +319,7 @@ jobs:
             --label "needs-investigation"
       
       - name: Upload analysis artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: failure-analysis-${{ github.event.workflow_run.id }}
