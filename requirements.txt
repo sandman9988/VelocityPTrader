@@ -29,7 +29,7 @@ alembic>=1.12.0         # Database migrations
 asyncpg>=0.28.0         # Async PostgreSQL driver
 
 # Visualization (optional)
-matplotlib>=3.7.0
+matplotlib>=3.9.4
 plotly>=5.14.0
 
 # Development tools - Super Linting & Static Analysis
