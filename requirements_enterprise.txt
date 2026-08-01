@@ -9,7 +9,7 @@ websockets==15.0.1
 # Security & Encryption
 cryptography==46.0.3
 PyJWT==2.10.1
-python-multipart==0.0.20
+python-multipart==0.0.31
 
 # Data & Caching
 redis==7.0.1
